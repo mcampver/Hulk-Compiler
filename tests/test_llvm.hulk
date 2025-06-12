@@ -1,0 +1,47 @@
+// Test file for LLVM code generation
+// Tests all the enhanced operators and features
+
+// Basic arithmetic with enhanced operators
+let a = 15;
+let b = 4;
+
+// Test integer division
+let div_result = a // b;
+
+// Test enhanced modulo
+let mod_result = a %% b;
+
+// Test triple addition
+let triple_result = a +++ b;
+
+// Logical operations
+let bool1 = true;
+let bool2 = false;
+
+// Test simple AND
+let and_result = bool1 & bool2;
+
+// Test simple OR  
+let or_result = bool1 | bool2;
+
+// String operations
+let str1 = "LLVM";
+let str2 = "Test";
+
+// Test simple concatenation
+let concat_simple = str1 @ str2;
+
+// Test concatenation with space
+let concat_space = str1 @@ str2;
+
+// Debug outputs to verify LLVM generation
+debug("Integer division result: ", div_result);
+debug("Enhanced modulo result: ", mod_result);
+debug("Triple addition result: ", triple_result);
+debug("AND operation result: ", and_result);
+debug("OR operation result: ", or_result);
+debug("Simple concatenation: ", concat_simple);
+debug("Space concatenation: ", concat_space);
+
+// Return the final result
+triple_result;

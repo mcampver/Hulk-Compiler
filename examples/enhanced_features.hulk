@@ -1,0 +1,23 @@
+ 
+let a = 5, b = 3 in {
+    // División entera
+    print(a // b);  // resultado: 1
+    
+    // Módulo mejorado (siempre positivo)
+    print((-7) %% 3);  // resultado: 2
+    
+    // Triple plus
+    print(2 +++ 3);     // para números: suma triple = 10
+};
+
+// Funciones built-in nuevas
+let x = 42 in {
+    debug(x);           // Muestra valor y tipo
+    print(type(x));     // Imprime "Number"
+    assert(x > 0, "x debe ser positivo");  // Assertion con mensaje
+};
+
+// String triple plus
+let str1 = "Hola", str2 = "Mundo" in {
+    print(str1 +++ str2);  // Triple concatenación
+};

@@ -1,0 +1,24 @@
+// HULK Enhanced Features Test
+// Test basic operations first
+3 + 4;
+5 - 2;
+
+// Test enhanced operators
+15 // 4;       // Integer division
+15 %% 4;       // Enhanced modulo
+-7 %% 3;       // Enhanced modulo with negative
+
+// Test logical operators
+true & false;  // Simple AND
+true | false;  // Simple OR
+!true;         // NOT
+
+// Test string operations
+"Hello" @ "World";      // String concatenation
+"Hello" @@ "World";     // String concatenation with space
+
+// Test triple addition
+10 +++ 20;     // Should sum to 30 + 30 = 60
+
+// Test string repetition (multiplication)
+"Ha" * 3;

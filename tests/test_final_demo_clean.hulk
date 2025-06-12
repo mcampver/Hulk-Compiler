@@ -1,0 +1,53 @@
+print("=== Operadores Basicos ===");
+print(4 > 3);
+print(4 == 4);
+print("test" == "test");
+print(true != false);
+
+print("=== Nuevos Operadores Aritmeticos ===");
+print(17 // 3);
+print((-10) %% 3);
+print(4 +++ 6);
+
+print("=== Operadores Logicos ===");
+print(true & false);
+print(false | true);
+print(!false);
+print(true && false);
+print(false || true);
+
+print("=== Concatenacion ===");
+print("Hola" @ "Mundo");
+print("Hola" @@ "Mundo");
+print("A" +++ "B");
+
+print("=== Funciones Built-in ===");
+let x = 42 in {
+    debug(x);
+    print(type(x));
+    assert(x > 0, "x positivo");
+};
+
+print("=== Funciones Matematicas ===");
+print(sqrt(16));
+print(sin(0));
+print(2 ^ 3);
+print(2 ** 4);
+
+print("=== Control de Flujo ===");
+if (5 // 2 == 2) {
+    print("Division entera funciona");
+} else {
+    print("Error en division entera");
+};
+
+let result = if (true & !false) "Logica correcta" else "Error logico" in {
+    print(result);
+};
+
+function modPositivo(a, b) => a %% b;
+
+let mod = modPositivo(-7, 3) in {
+    print("Modulo positivo de -7 y 3: " @ mod);
+    debug(mod);
+};

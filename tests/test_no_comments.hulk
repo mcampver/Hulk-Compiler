@@ -1,0 +1,11 @@
+3 + 4;
+5 - 2;
+15 // 4;
+15 %% 4;
+-7 %% 3;
+true & false;
+true | false;
+!true;
+"Hello" @ "World";
+"Hello" @@ "World";
+10 +++ 20;

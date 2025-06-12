@@ -1,0 +1,29 @@
+// HULK Enhanced - Ejemplo de debug y nuevas funciones
+
+function factorial(n) => 
+    if (n <= 1) 1 
+    else n * factorial(n - 1);
+
+let result = factorial(5) in {
+    debug(result);
+    assert(result == 120, "El factorial de 5 debería ser 120");
+    
+    let division = 17 // 3 in {
+        debug(division);
+        print("División entera de 17 // 3 = " @ division);
+    };
+    
+    let modulo = (-10) %% 3 in {
+        debug(modulo);
+        print("Módulo mejorado de -10 %% 3 = " @ modulo);
+    };
+    
+    let triple = 4 +++ 6 in {
+        debug(triple);
+        print("Triple suma de 4 +++ 6 = " @ triple);
+    };
+    
+    print("Tipo de result: " @ type(result));
+    print("Tipo de 'Hola': " @ type("Hola"));
+    print("Tipo de true: " @ type(true));
+};

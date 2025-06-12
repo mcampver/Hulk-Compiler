@@ -1,0 +1,5 @@
+let x = 42 in {
+    debug(x);
+    print(type(x));
+    assert(x > 0, "x debe ser positivo");
+};

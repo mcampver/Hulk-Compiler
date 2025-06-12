@@ -1,0 +1,46 @@
+debug("=== HULK Compiler Enhanced Demo ===");
+
+debug("Testing basic arithmetic:");
+3 + 4;
+5 - 2;
+
+debug("Testing enhanced arithmetic operators:");
+debug("Integer division (15 // 4):");
+15 // 4;
+
+debug("Enhanced modulo (15 %% 4):");
+15 %% 4;
+
+debug("Enhanced modulo with negative (-7 %% 3):");
+-7 %% 3;
+
+debug("Testing logical operators:");
+debug("Simple AND (true & false):");
+true & false;
+
+debug("Simple OR (true | false):");
+true | false;
+
+debug("NOT operator (!true):");
+!true;
+
+debug("Testing string operations:");
+debug("String concatenation (Hello @ World):");
+"Hello" @ "World";
+
+debug("String concatenation with space (Hello @@ World):");
+"Hello" @@ "World";
+
+debug("Testing triple addition (10 +++ 20):");
+10 +++ 20;
+
+debug("Testing type function:");
+type(42);
+type("hello");
+type(true);
+
+debug("Testing assertions:");
+assert(true, "This assertion should pass");
+assert(5 > 3, "5 is greater than 3");
+
+debug("=== All enhanced features working! ===");
