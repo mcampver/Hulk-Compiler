@@ -1,0 +1,67 @@
+# Archivos de compilación C/C++
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.out
+*.app
+
+# Archivos generados por Flex/Bison
+lex.yy.c
+lex.yy.cpp
+parser.tab.c
+parser.tab.cpp
+parser.tab.hpp
+*.output
+
+# Directorios de compilación
+/build/
+/bin/
+/obj/
+/Debug/
+/Release/
+/x64/
+/x86/
+
+# Archivos generados por LLVM
+*.ll
+*.bc
+*.s
+
+# Archivos específicos de HULK Compiler
+hulk/hulk_compiler.exe
+*.i
+main.i
+
+# Directorios de Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+ipch/
+
+# Archivos de Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Archivos temporales
+*~
+*.bak
+*.swp
+*.tmp
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos específicos del proyecto que no deberían ser ignorados
+!hulk/.gitkeep
+!build/.gitkeep
