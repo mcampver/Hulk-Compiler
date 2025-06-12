@@ -1,0 +1,28 @@
+4 > 3;
+4 < 3;
+4 <= 5;
+5 >= 5;
+
+4 == 4;
+4 != 4;
+
+"hola" == "hola";
+"hola" != "hola";
+False != False;
+True == True;
+
+True & False;
+False | True;
+
+"hola" @ "mundo";
+"hola" @@ "mundo";
+
+3 + 4;
+3 - 4;
+12 / 4;
+3 * 4;
+2 ^ 3;
+2 ** 4;
+
+!True;
+-4.7;
