@@ -129,14 +129,18 @@ test-semantic: compile
 	./$(EXECUTABLE) --debug --semantic test_enhanced.hulk
 
 # Run targets
+# Default file to run if none is specified
+FILE ?= hulk.hulk
+ARGS ?=
+
 run: compile
-	./$(EXECUTABLE) test_enhanced.hulk
+	./$(EXECUTABLE) $(ARGS) $(FILE)
 
 run-debug: compile
-	./$(EXECUTABLE) --debug test_enhanced.hulk
+	./$(EXECUTABLE) --debug $(ARGS) $(FILE)
 
 run-semantic: compile
-	./$(EXECUTABLE) --semantic test_enhanced.hulk
+	./$(EXECUTABLE) --semantic $(ARGS) $(FILE)
 
 # Execute script.hulk
 execute: compile
@@ -168,13 +172,12 @@ distclean: clean
 help:
 	@echo "=== HULK Compiler Enhanced Build System ==="
 	@echo ""	@echo "Main targets:"
-	@echo "  compile     - Build the compiler"
-	@echo "  execute     - Execute script.hulk from the root directory"
+	@echo "  compile     - Build the compiler"	@echo "  execute     - Execute script.hulk from the root directory"
 	@echo "  test-interpret  - Test interpretation mode"
 	@echo "  test-semantic   - Test semantic analysis mode"
-	@echo "  run         - Run in interpretation mode"
-	@echo "  run-debug   - Run with debug output"
-	@echo "  run-semantic - Run semantic analysis only"
+	@echo "  run         - Run in interpretation mode (FILE=filename.hulk to specify file)"
+	@echo "  run-debug   - Run with debug output (FILE=filename.hulk to specify file)"
+	@echo "  run-semantic - Run semantic analysis only (FILE=filename.hulk to specify file)"
 	@echo "  check-llvm  - Check LLVM installation"
 	@echo "  info        - Show build information"
 	@echo "  clean       - Clean build artifacts"
