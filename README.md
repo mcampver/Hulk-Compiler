@@ -119,16 +119,16 @@ The build system has been consolidated into a single unified Makefile with cross
 
 ```bash
 # Run the interpreter with a test file
-make run FILE=tests/test_enhanced.hulk
+make run FILE=tests/script.hulk
 
 # Run with debugging enabled
-make run FILE=tests/test_enhanced.hulk -- --debug
+make run FILE=tests/script.hulk -- --debug
 
 # Run semantic analysis only
-make run FILE=tests/test_enhanced.hulk -- --semantic
+make run FILE=tests/script.hulk -- --semantic
 
 # Generate LLVM IR (if LLVM is available)
-make run FILE=tests/test_llvm.hulk -- --llvm -o output.ll
+make run FILE=tests/script.hulk -- --llvm -o output.ll
 ```
 
 ## 📚 Language Examples
