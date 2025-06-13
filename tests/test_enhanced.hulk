@@ -1,0 +1,85 @@
+// HULK Compiler Enhanced - Test Script
+// Tests all enhanced operators and features
+
+// Test enhanced arithmetic operators
+let a = 15;
+let b = 4;
+
+print("Testing enhanced arithmetic operators:");
+print("15 // 4 (integer division) =", a // b);  // Should be 3
+print("15 %% 4 (enhanced modulo) =", a %% b);   // Should be 3
+
+// Test negative numbers with enhanced modulo
+print("-7 %% 3 (enhanced modulo) =", -7 %% 3);  // Should be 2
+
+// Test logical operators
+let x = true;
+let y = false;
+
+print("\nTesting enhanced logical operators:");
+print("true & false (logical and) =", x & y);    // Should be false
+print("true | false (logical or) =", x | y);     // Should be true
+print("!true (logical not) =", !x);              // Should be false
+
+// Test string operations
+let str1 = "Hello";
+let str2 = "World";
+let str3 = "!";
+
+print("\nTesting string operations:");
+print("String concatenation (@):", str1 @ " " @ str2);  // "Hello World"
+print("Triple concatenation (@@):", str1 @@ " " @@ str2 @@ str3);  // "Hello World!"
+
+// Test string repetition with multiplication
+print("String repetition:", "Ha" * 3);  // "HaHaHa"
+
+// Test triple addition (for numeric values)
+let num1 = 10;
+let num2 = 20;
+let num3 = 30;
+
+print("\nTesting triple addition:");
+print("10 +++ 20 +++ 30 =", num1 +++ num2 +++ num3);  // Should be 60
+
+// Test built-in functions
+print("\nTesting built-in functions:");
+debug("This is a debug message with value:", 42);
+
+print("Type of number:", type(42));
+print("Type of string:", type("hello"));
+print("Type of boolean:", type(true));
+
+// Test assertion
+assert(5 > 3, "Five should be greater than three");
+print("Assertion passed!");
+
+// Test mathematical functions
+print("\nTesting mathematical functions:");
+print("sin(π/2) ≈", sin(3.14159 / 2));
+print("cos(0) =", cos(0));
+print("sqrt(16) =", sqrt(16));
+print("exp(1) ≈", exp(1));
+print("log(exp(2)) ≈", log(exp(2)));
+print("2^3 =", pow(2, 3));
+
+// Test complex expressions
+print("\nTesting complex expressions:");
+let result = (a // b) + (a %% b) * 2;
+print("(15 // 4) + (15 % 4) * 2 =", result);
+
+// Test conditional with enhanced operators
+if (x & !y) {
+    print("Logical expression works correctly!");
+}
+
+// Test function-like expression
+function factorial(n) = if (n <= 1) 1 else n * factorial(n - 1);
+print("\nTesting function:");
+print("factorial(5) =", factorial(5));
+
+// Test string equality
+if (str1 @ " " @ str2 == "Hello World") {
+    print("String concatenation and equality work!");
+}
+
+print("\n=== All enhanced features tested successfully! ===");

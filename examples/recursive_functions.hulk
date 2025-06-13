@@ -1,0 +1,12 @@
+function factorial(n) => if (n <= 1) 1 else n * factorial(n - 1);
+
+function fibonacci(n) => if (n <= 1) n else fibonacci(n - 1) + fibonacci(n - 2);
+
+function sum_natural(n) => if (n <= 0) 0 else n + sum_natural(n - 1);
+
+function power(base, exp) => if (exp <= 0) 1 else base * power(base, exp - 1);
+
+print(factorial(5));
+print(fibonacci(8));
+print(sum_natural(10));
+print(power(2, 4));

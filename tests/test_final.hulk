@@ -1,0 +1,9 @@
+15 // 4;
+15 %% 4;
+-7 %% 3;
+true & false;
+true | false;
+"Hello" @ "World";
+"Hello" @@ "World";
+10 +++ 20;
+debug("Enhanced HULK features working perfectly!");

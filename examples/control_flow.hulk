@@ -1,0 +1,39 @@
+// Control flow examples
+
+// Simple if-else
+function max(a, b) =>
+    if a > b then a else b;
+
+print("max(5, 3) = " + max(5, 3));
+
+// Nested conditions
+function classify_number(n) =>
+    if n > 0 then "positive"
+    else if n < 0 then "negative"
+    else "zero";
+
+print("classify_number(5) = " + classify_number(5));
+print("classify_number(-3) = " + classify_number(-3));
+print("classify_number(0) = " + classify_number(0));
+
+// While loop example (conceptual - would need proper syntax)
+function count_down(n) =>
+    if n <= 0 then "Done!"
+    else {
+        print("Counting: " + n);
+        count_down(n - 1)
+    };
+
+count_down(5);
+
+// Complex conditional logic
+function grade_letter(score) =>
+    if score >= 90 then "A"
+    else if score >= 80 then "B"
+    else if score >= 70 then "C"
+    else if score >= 60 then "D"
+    else "F";
+
+print("Grade for 85: " + grade_letter(85));
+print("Grade for 72: " + grade_letter(72));
+print("Grade for 55: " + grade_letter(55));

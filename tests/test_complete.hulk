@@ -1,0 +1,27 @@
+function factorial(n) => 
+    if (n <= 1) 1 
+    else n * factorial(n - 1);
+
+let result = factorial(5) in {
+    debug(result);
+    assert(result == 120, "El factorial de 5 debe ser 120");
+    
+    let division = 17 // 3 in {
+        debug(division);
+        print("Division entera: " @ division);
+    };
+    
+    let modulo = (-10) %% 3 in {
+        debug(modulo);
+        print("Modulo mejorado: " @ modulo);
+    };
+    
+    let triple = 4 +++ 6 in {
+        debug(triple);
+        print("Triple suma: " @ triple);
+    };
+    
+    print("Resultado tipo: " @ type(result));
+    print("String tipo: " @ type("Hola"));
+    print("Boolean tipo: " @ type(true));
+};

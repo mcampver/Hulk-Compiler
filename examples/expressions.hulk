@@ -1,0 +1,18 @@
+// Mathematical operations and expressions - Compatible syntax
+function square(x) => x * x;
+function cube(x) => x * x * x;
+
+// Basic arithmetic test
+let result1 = 2 + 3 * 4;
+print(result1);
+
+let result2 = (2 + 3) * 4;
+print(result2);
+
+// Function calls
+print(square(5));
+print(cube(3));
+
+// Complex expression
+function complex_calc(a, b) => (a * square(b)) / (b + 1);
+print(complex_calc(4, 3));
