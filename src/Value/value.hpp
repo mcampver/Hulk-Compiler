@@ -12,12 +12,13 @@
 
 class RangeValue;
 class RangeIterator;
+class HulkObject;
 
 class Value
 {
 public:
     using Storage = std::variant<double, std::string, bool, std::shared_ptr<RangeValue>,
-                                 std::shared_ptr<RangeIterator>>;
+                                 std::shared_ptr<RangeIterator>, std::shared_ptr<HulkObject>>;
 
     Value() : val(0.0) {}
     Value(double d) : val(d) {}
@@ -25,6 +26,7 @@ public:
     Value(bool b) : val(b) {}
     Value(std::shared_ptr<RangeValue> rv) : val(rv) {}
     Value(std::shared_ptr<RangeIterator> it) : val(it) {}
+    Value(std::shared_ptr<HulkObject> obj) : val(obj) {}
 
     ~Value() = default;
 
@@ -47,11 +49,15 @@ public:
     isRange() const
     {
         return std::holds_alternative<std::shared_ptr<RangeValue>>(val);
-    }
-    bool
+    }    bool
     isIterable() const
     {
         return std::holds_alternative<std::shared_ptr<RangeIterator>>(val);
+    }
+    bool
+    isObject() const
+    {
+        return std::holds_alternative<std::shared_ptr<HulkObject>>(val);
     }
 
     double
@@ -75,13 +81,19 @@ public:
         if (!isRange())
             throw std::runtime_error("Value no es RangeValue");
         return std::get<std::shared_ptr<RangeValue>>(val);
-    }
-    std::shared_ptr<RangeIterator>
+    }    std::shared_ptr<RangeIterator>
     asIterable() const
     {
         if (!isIterable())
             throw std::runtime_error("Value no es RangeIterator");
         return std::get<std::shared_ptr<RangeIterator>>(val);
+    }
+    std::shared_ptr<HulkObject>
+    asObject() const
+    {
+        if (!isObject())
+            throw std::runtime_error("Value no es HulkObject");
+        return std::get<std::shared_ptr<HulkObject>>(val);
     }
 
     std::string
@@ -101,14 +113,16 @@ public:
         if (isBool())
         {
             return asBool() ? "true" : "false";
-        }
-        if (isRange())
+        }        if (isRange())
         {
             return "<range>";
         }
         if (isIterable())
         {
             return "<iterator>";
+        }        if (isObject())
+        {
+            return "<object>";
         }
         return "<unknown>";
     }

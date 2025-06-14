@@ -1,0 +1,7 @@
+type Point {
+    x = 0;
+    getX() => self.x;
+    setX(val) => self.x := val;
+}
+
+print(42);

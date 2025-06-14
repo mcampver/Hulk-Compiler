@@ -1,0 +1,6 @@
+type SimplePoint {
+    x = 100;
+    y = "peep";
+};
+
+let pt = new SimplePoint() in print(pt.y);

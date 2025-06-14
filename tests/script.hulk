@@ -1,0 +1,13 @@
+type peep {
+    x = 2222;
+    y = 0;
+
+    getX() => self.x;
+    getY() => self.y;
+
+    setX(x) => self.x := x;
+    setY(y) => self.y := y;
+};
+
+let pt = new peep() in
+    print(pt.getX());

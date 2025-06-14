@@ -120,13 +120,44 @@ public:
         for (auto &stmt : expr->stmts)
             stmt->accept(this);
         currentScope_ = parent;
-    }
-    void visit(WhileExpr *expr) override
+    }    void visit(WhileExpr *expr) override
     {
         expr->condition->accept(this);
         auto parent = currentScope_;
         currentScope_ = std::make_shared<SymScope>(parent);
         expr->body->accept(this);
         currentScope_ = parent;
+    }
+
+    // Nuevos métodos para soportar tipos
+    void visit(TypeDecl *) override
+    {
+        // Implementación básica para declaraciones de tipo
+    }
+
+    void visit(NewExpr *) override
+    {
+        // Implementación básica para expresiones new
+    }
+
+    void visit(MemberExpr *) override
+    {
+        // Implementación básica para acceso a miembros
+    }
+
+    void visit(SelfExpr *) override
+    {
+        // Implementación básica para self
+    }    void visit(BaseExpr *) override
+    {
+        // Implementación básica para base
+    }    void visit(MemberAssignExpr *) override
+    {
+        // Implementación básica para asignación a miembros
+    }
+
+    void visit(MethodCallExpr *) override
+    {
+        // Implementación básica para llamadas a métodos
     }
 };

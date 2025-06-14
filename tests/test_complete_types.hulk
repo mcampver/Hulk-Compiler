@@ -1,0 +1,25 @@
+type Point {
+    x = 0;
+    y = 0;
+    
+    getX() => self.x;
+    getY() => self.y;
+    setX(newX) => self.x := newX;
+    setY(newY) => self.y := newY;
+    
+    distance() => sqrt(self.x * self.x + self.y * self.y);
+};
+
+let pt = new Point() in {
+    print("Initial point:");
+    print("x = "); print(pt.getX());
+    print("y = "); print(pt.getY());
+    
+    pt.setX(3);
+    pt.setY(4);
+    
+    print("After setting values:");
+    print("x = "); print(pt.getX());
+    print("y = "); print(pt.getY());
+    print("distance = "); print(pt.distance());
+};

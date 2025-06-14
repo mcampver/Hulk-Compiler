@@ -1,0 +1,8 @@
+type Person { 
+    name = "Alice"; 
+    age = 25;
+    getName() => self.name;
+    getAge() => self.age;
+    greet() => "Hello, " @ self.name;
+}; 
+let p = new Person() in print(p.greet());

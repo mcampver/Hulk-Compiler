@@ -256,8 +256,99 @@ private:
         case BinaryExpr::OP_CONCAT_SPACE:
             return "@@";
         default:
-            return "?";
+            return "?";        }
+    }
+
+    void visit(TypeDecl *decl) override
+    {
+        printIndent();
+        std::cout << "|- TypeDecl: " << decl->name << std::endl;
+        indentLevel++;
+        printIndent();
+        std::cout << "Attributes:" << std::endl;
+        for (const auto& attr : decl->attributes) {
+            printIndent();
+            std::cout << "  " << attr.first << " = ";
+            if (attr.second) {
+                attr.second->accept(this);
+            }
         }
+        printIndent();
+        std::cout << "Methods:" << std::endl;
+        for (const auto& method : decl->methods) {
+            printIndent();
+            std::cout << "  " << method.first << "(";
+            for (size_t i = 0; i < method.second.size(); ++i) {
+                std::cout << method.second[i];
+                if (i < method.second.size() - 1) std::cout << ", ";
+            }
+            std::cout << ")" << std::endl;
+        }
+        indentLevel--;
+    }
+
+    void visit(NewExpr *expr) override
+    {
+        printIndent();
+        std::cout << "|- NewExpr: " << expr->typeName << std::endl;
+        if (!expr->args.empty()) {
+            indentLevel++;
+            printIndent();
+            std::cout << "Arguments:" << std::endl;
+            for (auto& arg : expr->args) {
+                arg->accept(this);
+            }
+            indentLevel--;
+        }
+    }
+
+    void visit(MemberExpr *expr) override
+    {
+        printIndent();
+        std::cout << "|- MemberExpr: ." << expr->member << std::endl;
+        indentLevel++;
+        expr->object->accept(this);
+        indentLevel--;
+    }    void visit(SelfExpr *) override
+    {
+        printIndent();
+        std::cout << "|- SelfExpr" << std::endl;
+    }    void visit(BaseExpr *) override
+    {
+        printIndent();
+        std::cout << "|- BaseExpr" << std::endl;
+    }    void visit(MemberAssignExpr *expr) override
+    {
+        printIndent();
+        std::cout << "|- MemberAssignExpr" << std::endl;
+        indentLevel++;
+        expr->object->accept(this);
+        printIndent();
+        std::cout << "|- Member: " << expr->member << std::endl;
+        expr->value->accept(this);
+        indentLevel--;
+    }
+
+    void visit(MethodCallExpr *expr) override
+    {
+        printIndent();
+        std::cout << "|- MethodCallExpr: ." << expr->method << "()" << std::endl;
+        indentLevel++;
+        printIndent();
+        std::cout << "|- Object:" << std::endl;
+        indentLevel++;
+        expr->object->accept(this);
+        indentLevel--;
+        if (!expr->args.empty()) {
+            printIndent();
+            std::cout << "|- Arguments:" << std::endl;
+            indentLevel++;
+            for (auto& arg : expr->args) {
+                arg->accept(this);
+            }
+            indentLevel--;
+        }
+        indentLevel--;
     }
 };
 

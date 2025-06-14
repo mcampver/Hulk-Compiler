@@ -1,0 +1,5 @@
+type Point {
+    x = 0;
+}
+
+print(42);

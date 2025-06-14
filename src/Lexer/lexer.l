@@ -64,16 +64,20 @@ extern int yylineno;
     if (strcmp(yytext, "elif") == 0)     return ELIF;
     if (strcmp(yytext, "let") == 0)      return LET;
     if (strcmp(yytext, "in") == 0)       return IN;
-    if (strcmp(yytext, "while") == 0)    return WHILE;    if (strcmp(yytext, "for") == 0)      return FOR;
+    if (strcmp(yytext, "while") == 0)    return WHILE;
+    if (strcmp(yytext, "for") == 0)      return FOR;
     if (strcmp(yytext, "true") == 0)     { yylval.expr = new BooleanExpr(true);  return TRUE; }
     if (strcmp(yytext, "false") == 0)    { yylval.expr = new BooleanExpr(false); return FALSE; }
     if (strcmp(yytext, "True") == 0)     { yylval.expr = new BooleanExpr(true);  return TRUE; }
     if (strcmp(yytext, "False") == 0)    { yylval.expr = new BooleanExpr(false); return FALSE; }
     if (strcmp(yytext,"function") == 0)  return FUNCTION; 
     if (strcmp(yytext, "debug") == 0)    return DEBUG;
-    if (strcmp(yytext, "type") == 0)     return TYPE_FUNC;
+    if (strcmp(yytext, "type") == 0)     return TYPE;
     if (strcmp(yytext, "assert") == 0)   return ASSERT;
-
+    if (strcmp(yytext, "new") == 0)      return NEW;
+    if (strcmp(yytext, "self") == 0)     return SELF;
+    if (strcmp(yytext, "inherits") == 0) return INHERITS;
+    if (strcmp(yytext, "base") == 0)     return BASE;
 
     // Si no es ninguna palabra reservada, entonces es IDENT
     yylval.str = strdup(yytext);
@@ -93,6 +97,7 @@ extern int yylineno;
 \(                          { return LPAREN; }
 \)                          { return RPAREN; }
 \;                          { return SEMICOLON; }
+\.                          { return DOT; }
 "%%"                        { return ENHANCED_MOD; }
 \%                          { return MOD; }
 "<="                        { return LE; }

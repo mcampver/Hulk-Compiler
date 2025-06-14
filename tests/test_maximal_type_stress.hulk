@@ -1,0 +1,178 @@
+// HULK Type System Stress Test - Maximal Functionality Exercise
+// This test pushes every aspect of the type system to its absolute limits
+
+// Test 1: Multiple Attribute Types and Complex Initialization
+type ComplexEntity {
+    id = 1001;
+    name = "Entity_Alpha";
+    isActive = true;
+    coefficient = 3.14159;
+    
+    // Method with multiple operations on different attribute types
+    getFullInfo() => "ID:" @ self.id @ ",Name:" @ self.name @ ",Active:" @ self.isActive @ ",Coef:" @ self.coefficient;
+    
+    // Method that modifies and returns calculated values
+    calculateHash() => self.id * 17 + (if self.isActive then 100 else 0);
+    
+    // Chained self references in complex expression
+    getComplexCalc() => (self.id + 50) * (if self.coefficient > 3.0 then 2 else 1) + (if self.isActive then self.id else 0);
+}
+
+// Test 2: Type with Heavy Method Interaction and State Changes
+type StateMachine {
+    state = 0;
+    multiplier = 2;
+    accumulator = 10;
+    
+    // Method that references multiple self attributes in complex ways
+    processState() => self.state := self.state + self.multiplier * (self.accumulator / 5);
+    
+    // Method that uses result of another method calculation
+    getAdvancedValue() => self.processState() + (self.state * self.multiplier);
+    
+    // Complex conditional logic with self references
+    determineStatus() => if self.state > 20 then "HIGH" else (if self.state > 10 then "MEDIUM" else "LOW");
+    
+    // Method chaining scenario
+    chainedOperation() => self.processState() + self.getAdvancedValue() + (if self.determineStatus() == "HIGH" then 100 else 50);
+}
+
+// Test 3: Mathematical Type with Complex Calculations
+type MathProcessor {
+    base = 5;
+    exponent = 3;
+    offset = 7;
+    
+    // Complex mathematical expression with self references
+    power() => self.base * self.base * self.base; // Manual power calculation
+    
+    // Nested method calls and complex arithmetic
+    complexFormula() => (self.power() + self.offset) * 2 - (self.base + self.exponent);
+    
+    // Conditional mathematics with self state
+    conditionalMath() => if self.base > self.exponent then self.power() + self.offset else self.offset - self.base;
+    
+    // Method that demonstrates multiple self references in single expression
+    megaCalculation() => self.base + self.exponent + self.offset + self.power() + self.complexFormula() + self.conditionalMath();
+}
+
+// Test 4: String Processing Type with Complex Text Operations
+type TextProcessor {
+    prefix = ">>>";
+    suffix = "<<<";
+    content = "CORE";
+    separator = "|";
+    
+    // Complex string concatenation with multiple self references
+    buildMessage() => self.prefix @ self.content @ self.separator @ self.content @ self.suffix;
+    
+    // Nested string operations
+    createHeader() => "START" @ self.separator @ self.buildMessage() @ self.separator @ "END";
+    
+    // Conditional string building
+    formatOutput() => if self.content == "CORE" then self.createHeader() else self.buildMessage();
+    
+    // Ultra-complex string manipulation
+    generateReport() => self.prefix @ "REPORT" @ self.separator @ self.formatOutput() @ self.separator @ "SIZE:" @ (1 + 2 + 3) @ self.suffix;
+}
+
+// Test 5: Interaction Between Multiple Object Instances
+type Counter {
+    value = 0;
+    step = 1;
+    
+    increment() => self.value := self.value + self.step;
+    getValue() => self.value;
+    setStep(newStep) => self.step := newStep;
+}
+
+// MAIN EXECUTION - Maximum stress testing of all functionality
+{
+    print("=== HULK TYPE SYSTEM MAXIMAL STRESS TEST ===");
+    
+    // Create and test ComplexEntity
+    let entity = new ComplexEntity() in {
+        print("ComplexEntity Test:");
+        print(entity.getFullInfo());
+        print("Hash: " @ entity.calculateHash());
+        print("Complex Calc: " @ entity.getComplexCalc());
+        print("");
+    };
+    
+    // Create and test StateMachine with state modifications
+    let machine = new StateMachine() in {
+        print("StateMachine Test:");
+        print("Initial state: " @ machine.state);
+        print("Process result: " @ machine.processState());
+        print("Advanced value: " @ machine.getAdvancedValue());
+        print("Status: " @ machine.determineStatus());
+        print("Chained operation: " @ machine.chainedOperation());
+        print("Final state: " @ machine.state);
+        print("");
+    };
+    
+    // Create and test MathProcessor with complex calculations
+    let math = new MathProcessor() in {
+        print("MathProcessor Test:");
+        print("Base: " @ math.base @ ", Exponent: " @ math.exponent @ ", Offset: " @ math.offset);
+        print("Power: " @ math.power());
+        print("Complex formula: " @ math.complexFormula());
+        print("Conditional math: " @ math.conditionalMath());
+        print("MEGA calculation: " @ math.megaCalculation());
+        print("");
+    };
+    
+    // Create and test TextProcessor with string operations
+    let text = new TextProcessor() in {
+        print("TextProcessor Test:");
+        print("Message: " @ text.buildMessage());
+        print("Header: " @ text.createHeader());
+        print("Formatted: " @ text.formatOutput());
+        print("Report: " @ text.generateReport());
+        print("");
+    };
+    
+    // Create multiple Counter instances and test interactions
+    let counter1 = new Counter() in
+    let counter2 = new Counter() in {
+        print("Multiple Instances Test:");
+        
+        // Test independent object states
+        counter1.setStep(5);
+        counter2.setStep(10);
+        
+        print("Counter1 initial: " @ counter1.getValue());
+        print("Counter2 initial: " @ counter2.getValue());
+        
+        counter1.increment();
+        counter1.increment();
+        counter2.increment();
+        
+        print("Counter1 after 2 increments (step 5): " @ counter1.getValue());
+        print("Counter2 after 1 increment (step 10): " @ counter2.getValue());
+        
+        // Complex expression using both counters
+        print("Combined value: " @ (counter1.getValue() + counter2.getValue()));
+        print("");
+    };
+    
+    // Ultimate stress test: Complex nested object operations
+    let ultimate = new ComplexEntity() in
+    let processor = new MathProcessor() in {
+        print("ULTIMATE STRESS TEST:");
+        
+        // Access attributes from multiple objects in complex expression
+        let combined = ultimate.id + processor.base * 2 in
+        print("Combined calculation: " @ combined);
+        
+        // Method calls on multiple objects in single expression
+        let megaResult = ultimate.calculateHash() + processor.megaCalculation() in
+        print("Mega result: " @ megaResult);
+        
+        // Complex boolean logic with multiple object references
+        let complexCondition = if ultimate.isActive then processor.complexFormula() else ultimate.id in
+        print("Complex condition result: " @ complexCondition);
+        
+        print("=== ALL TESTS COMPLETED SUCCESSFULLY ===");
+    };
+}

@@ -1,0 +1,4 @@
+type Point {
+    x = 0;
+    setX(newX) => self.x := newX;
+}

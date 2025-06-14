@@ -1,0 +1,1 @@
+type Point { x = 0; y = 0; getX() => self.x; getY() => self.y; setX(newX) => self.x := newX; }; let pt = new Point() in { pt.setX(42); print(pt.getX()); };

@@ -1,0 +1,1 @@
+type Pepito { x = 1111; y = 2222; getX() => self.x; getY() => self.y; }; let obj = new Pepito() in print(obj.getX());

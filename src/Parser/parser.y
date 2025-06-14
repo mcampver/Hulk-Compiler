@@ -16,6 +16,9 @@ extern int yylineno;
 void yyerror(const char* s);
 
 Program* rootAST = nullptr;
+
+// Variables globales temporales para el parser
+TypeDecl* currentTypeDecl = nullptr;
 %}
 
 
@@ -29,6 +32,8 @@ Program* rootAST = nullptr;
   std::vector<std::string>* str_list;
   std::pair<std::string, Expr*>* binding;
   std::vector<std::pair<std::string, Expr*>>* bindings;
+  TypeDecl* type_decl;
+  std::pair<std::string, Expr*>* type_attr;
 }
 
 %start input
@@ -43,6 +48,8 @@ Program* rootAST = nullptr;
 %type <bindings> binding_list 
 %type <expr> if_expr elif_list
 %type <expr_list> argument_list
+%type <type_decl> type_declaration type_body
+%type <type_attr> type_attr
 
 
 %token LET IN 
@@ -54,10 +61,10 @@ Program* rootAST = nullptr;
 %token <expr> TRUE FALSE NUMBER STRING
 %token PLUS MINUS MULT DIV MOD POW CONCAT
 %token INT_DIV ENHANCED_MOD TRIPLE_PLUS
-%token DEBUG TYPE_FUNC ASSERT
+%token DEBUG TYPE ASSERT NEW SELF INHERITS BASE
 %token AND_SIMPLE OR_SIMPLE NOT CONCAT_SPACE
 %token LE GE EQ NEQ LESS_THAN GREATER_THAN OR AND
-%token LPAREN RPAREN LBRACE RBRACE COMMA SEMICOLON
+%token LPAREN RPAREN LBRACE RBRACE COMMA SEMICOLON DOT
 
 %left OR OR_SIMPLE
 %left AND AND_SIMPLE
@@ -69,6 +76,7 @@ Program* rootAST = nullptr;
 %right POW
 %right NOT
 %left UMINUS
+%left DOT
 
 %%
 
@@ -125,12 +133,13 @@ stmt:
       }
   | FUNCTION IDENT LPAREN ident_list RPAREN ARROW expr  {
           std::vector<std::string> args = std::move(*$4);
-          delete $4;
-
-          $$ = new FunctionDecl(std::string($2), std::move(args), StmtPtr(new ExprStmt(ExprPtr($7))));
+          delete $4;          $$ = new FunctionDecl(std::string($2), std::move(args), StmtPtr(new ExprStmt(ExprPtr($7))));
           free($2);
       }
-;    
+  | type_declaration {
+          $$ = $1;
+      }
+;
 
 
 
@@ -167,9 +176,7 @@ expr:
           std::vector<ExprPtr> args;
           args.push_back(ExprPtr($3));
           $$ = new CallExpr("debug", std::move(args));
-      }
-
-    | TYPE_FUNC LPAREN expr RPAREN {
+      }    | TYPE LPAREN expr RPAREN {
           std::vector<ExprPtr> args;
           args.push_back(ExprPtr($3));
           $$ = new CallExpr("type", std::move(args));
@@ -180,12 +187,50 @@ expr:
           args.push_back(ExprPtr($3));
           args.push_back(ExprPtr($5));
           $$ = new CallExpr("assert", std::move(args));
-      }
-
-    | IDENT {
+      }    | IDENT {
           $$ = new VariableExpr(std::string($1));
           free($1);
-      }    | MINUS expr %prec UMINUS {
+      }
+    
+    | NEW IDENT LPAREN argument_list RPAREN {
+          $$ = new NewExpr(std::string($2), std::move(*$4));
+          delete $4;
+          free($2);
+      }
+      
+    | NEW IDENT LPAREN RPAREN {
+          std::vector<ExprPtr> empty_args;
+          $$ = new NewExpr(std::string($2), std::move(empty_args));
+          free($2);
+      }
+        | expr DOT IDENT {
+          $$ = new MemberExpr(ExprPtr($1), std::string($3));
+          free($3);
+      }
+      
+    | expr DOT IDENT LPAREN argument_list RPAREN {
+          $$ = new MethodCallExpr(ExprPtr($1), std::string($3), std::move(*$5));
+          delete $5;
+          free($3);
+      }
+      
+    | expr DOT IDENT LPAREN RPAREN {
+          std::vector<ExprPtr> empty_args;
+          $$ = new MethodCallExpr(ExprPtr($1), std::string($3), std::move(empty_args));
+          free($3);
+      }
+      
+    | SELF {
+          $$ = new SelfExpr();
+      }
+      
+    | BASE {
+          $$ = new BaseExpr();
+      }
+      
+    | BASE LPAREN RPAREN {
+          $$ = new BaseExpr();
+      }| MINUS expr %prec UMINUS {
           $$ = new UnaryExpr(UnaryExpr::OP_NEG, ExprPtr($2));
       }
 
@@ -288,11 +333,14 @@ expr:
 
           delete $2;
           $$ = result;      
-        }
-
-    | IDENT ASSIGN_DESTRUCT expr {
+        }    | IDENT ASSIGN_DESTRUCT expr {
           $$ = new AssignExpr(std::string($1), ExprPtr($3));
           free($1);
+      }
+      
+    | expr DOT IDENT ASSIGN_DESTRUCT expr {
+          $$ = new MemberAssignExpr(ExprPtr($1), std::string($3), ExprPtr($5));
+          free($3);
       }
     | WHILE LPAREN expr RPAREN expr {
       $$ = new WhileExpr(ExprPtr($3), ExprPtr($5));
@@ -364,6 +412,47 @@ argument_list:
       }
 ; 
 
+// Declaración de tipos
+type_declaration:
+    TYPE IDENT LBRACE type_body RBRACE {
+        $$ = $4; // $4 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        free($2);
+    }
+;
+
+// Cuerpo del tipo - construye gradualmente el TypeDecl
+type_body:
+    /* vacío */ { 
+        $$ = new TypeDecl("");
+    }    | type_body type_attr { 
+        $1->attributes.push_back(*$2);
+        delete $2;
+        $$ = $1;
+    }
+    | type_body IDENT LPAREN ident_list RPAREN ARROW expr SEMICOLON {
+        // Agregar método con parámetros
+        $1->addMethod(std::string($2), *$4, $7);
+        delete $4;
+        free($2);
+        $$ = $1;
+    }
+    | type_body IDENT LPAREN RPAREN ARROW expr SEMICOLON {
+        // Agregar método sin parámetros
+        std::vector<std::string> emptyParams;
+        $1->addMethod(std::string($2), emptyParams, $6);
+        free($2);
+        $$ = $1;
+    }
+;
+
+// Atributo del tipo
+type_attr:
+    IDENT ASSIGN expr SEMICOLON { 
+        $$ = new std::pair<std::string, Expr*>(std::string($1), $3);
+        free($1);
+    }
+;
 
 %%
 

@@ -1,0 +1,5 @@
+type Point { 
+    x = 4; 
+    getX() => self.x; 
+}; 
+let pt = new Point() in pt.getX();

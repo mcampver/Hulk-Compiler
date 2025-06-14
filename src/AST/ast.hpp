@@ -25,6 +25,13 @@ struct FunctionDecl;
 struct IfExpr;
 struct ExprBlock;
 struct WhileExpr;
+struct TypeDecl;
+struct NewExpr;
+struct MemberExpr;
+struct SelfExpr;
+struct BaseExpr;
+struct MemberAssignExpr;
+struct MethodCallExpr;
 
 struct ExprVisitor
 {
@@ -40,7 +47,12 @@ struct ExprVisitor
     virtual void visit(AssignExpr *expr) = 0;
     virtual void visit(IfExpr *) = 0;
     virtual void visit(ExprBlock *) = 0;
-    virtual void visit(WhileExpr *) = 0;
+    virtual void visit(WhileExpr *) = 0;    virtual void visit(NewExpr *) = 0;
+    virtual void visit(MemberExpr *) = 0;
+    virtual void visit(SelfExpr *) = 0;
+    virtual void visit(BaseExpr *) = 0;
+    virtual void visit(MemberAssignExpr *) = 0;
+    virtual void visit(MethodCallExpr *) = 0;
     virtual ~ExprVisitor() = default;
 };
 
@@ -49,6 +61,7 @@ struct StmtVisitor
     virtual void visit(Program *) = 0;
     virtual void visit(ExprStmt *) = 0;
     virtual void visit(FunctionDecl *) = 0;
+    virtual void visit(TypeDecl *) = 0;
     virtual ~StmtVisitor() = default;
 };
 
@@ -301,6 +314,111 @@ struct WhileExpr : Expr
 
     void
     accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Type declaration
+struct TypeDecl : Stmt
+{
+    std::string name;
+    std::vector<std::string> params;
+    std::string parentType;
+    std::vector<ExprPtr> parentArgs;
+    std::vector<std::pair<std::string, Expr*>> attributes;
+    std::vector<std::pair<std::string, std::vector<std::string>>> methods;
+    std::vector<ExprPtr> methodBodies;
+
+    TypeDecl(const std::string& n) : name(n) {}
+
+    // Helper to add a method with its body
+    void addMethod(const std::string& name, const std::vector<std::string>& params, Expr* body) {
+        methods.push_back(std::make_pair(name, params));
+        methodBodies.push_back(ExprPtr(body));
+    }
+
+    void accept(StmtVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// New expression for object instantiation
+struct NewExpr : Expr
+{
+    std::string typeName;
+    std::vector<ExprPtr> args;
+
+    NewExpr(const std::string& type, std::vector<ExprPtr>&& arguments) 
+        : typeName(type), args(std::move(arguments)) {}
+
+    void accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Member access expression (obj.member)
+struct MemberExpr : Expr
+{
+    ExprPtr object;
+    std::string member;
+
+    MemberExpr(ExprPtr obj, const std::string& mem) 
+        : object(std::move(obj)), member(mem) {}
+
+    void accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Self expression
+struct SelfExpr : Expr
+{
+    void accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Base expression
+struct BaseExpr : Expr
+{
+    void accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Member assignment expression (obj.member := value)
+struct MemberAssignExpr : Expr
+{
+    ExprPtr object;
+    std::string member;
+    ExprPtr value;
+
+    MemberAssignExpr(ExprPtr obj, const std::string& mem, ExprPtr val) 
+        : object(std::move(obj)), member(mem), value(std::move(val)) {}
+
+    void accept(ExprVisitor *v) override
+    {
+        v->visit(this);
+    }
+};
+
+// Method call expression (obj.method(args))
+struct MethodCallExpr : Expr
+{
+    ExprPtr object;
+    std::string method;
+    std::vector<ExprPtr> args;
+
+    MethodCallExpr(ExprPtr obj, const std::string& meth, std::vector<ExprPtr>&& arguments) 
+        : object(std::move(obj)), method(meth), args(std::move(arguments)) {}
+
+    void accept(ExprVisitor *v) override
     {
         v->visit(this);
     }

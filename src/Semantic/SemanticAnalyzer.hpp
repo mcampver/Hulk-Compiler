@@ -347,8 +347,56 @@ private:
                 // These can work with any types, similar to && and ||
                 break;
                 
-            default:
-                break;
+            default:                break;
         }
+    }
+
+    void visit(TypeDecl* decl) override {
+        // Add type to symbol table
+        // For now, just report that we found a type declaration
+        std::cout << "Semantic analysis: Type declaration " << decl->name << std::endl;
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown);
+    }
+
+    void visit(NewExpr* expr) override {
+        // Check if type exists and evaluate arguments
+        for (auto& arg : expr->args) {
+            arg->accept(this);
+        }
+        // For now, assume object creation succeeds
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // Should be the type being created
+    }
+
+    void visit(MemberExpr* expr) override {
+        expr->object->accept(this);
+        // Check if member exists for the object type
+        // For now, assume member access succeeds
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown);
+    }
+
+    void visit(SelfExpr* expr) override {
+        // Should check if we're inside a type method
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // Should be the current type
+    }    void visit(BaseExpr* expr) override {
+        // Should check if we're inside an inherited type method
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // Should be the parent type
+    }    void visit(MemberAssignExpr* expr) override {
+        expr->object->accept(this);
+        expr->value->accept(this);
+        // Check if assignment is valid
+        current_type_ = current_type_; // Return the assigned value type
+    }
+
+    void visit(MethodCallExpr* expr) override {
+        // Evaluate object
+        expr->object->accept(this);
+        
+        // Evaluate arguments
+        for (auto& arg : expr->args) {
+            arg->accept(this);
+        }
+        
+        // For now, assume method call succeeds
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // Should be the method return type
     }
 };

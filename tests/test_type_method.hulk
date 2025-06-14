@@ -1,0 +1,6 @@
+type Point {
+    x = 0;
+    getX() => x;
+}
+
+print(42);

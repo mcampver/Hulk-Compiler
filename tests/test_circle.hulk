@@ -1,0 +1,11 @@
+type Circle { 
+    radius = 5; 
+    getArea() => 3.14159 * self.radius * self.radius;
+    getCircumference() => 2 * 3.14159 * self.radius;
+}; 
+let c = new Circle() in {
+    print("Area: ");
+    print(c.getArea());
+    print("Circumference: ");
+    print(c.getCircumference());
+};

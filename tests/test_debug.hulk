@@ -1,0 +1,1 @@
+type Point { x = 4; }; let pt = new Point() in print(42);
