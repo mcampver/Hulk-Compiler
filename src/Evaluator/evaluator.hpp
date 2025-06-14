@@ -616,16 +616,73 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         
         TypeDecl* typeDecl = it->second;
         
+        // Evaluar argumentos del constructor
+        std::vector<Value> args;
+        for (auto &arg : expr->args) {
+            arg->accept(this);
+            args.push_back(lastValue);
+        }
+        
+        // Determinar los parámetros esperados (propios o heredados del padre)
+        std::vector<std::string> expectedParams = typeDecl->params;
+        
+        // Si el tipo no tiene parámetros propios pero tiene padre, heredar del padre
+        if (expectedParams.empty() && !typeDecl->parentType.empty()) {
+            auto parentIt = types.find(typeDecl->parentType);
+            if (parentIt != types.end()) {
+                expectedParams = parentIt->second->params;
+            }
+        }
+        
+        // Verificar que el número de argumentos coincida
+        if (args.size() != expectedParams.size()) {
+            throw std::runtime_error("Tipo " + expr->typeName + " espera " + 
+                                   std::to_string(expectedParams.size()) + 
+                                   " argumentos, pero se proporcionaron " + 
+                                   std::to_string(args.size()));
+        }
+        
         // Crear nuevo objeto
         auto obj = std::make_shared<HulkObject>(expr->typeName, typeDecl);
         
-        // Inicializar atributos con valores de la declaración del tipo
+        // Crear un frame temporal para la inicialización con los parámetros del constructor
+        auto oldEnv = env;
+        env = std::make_shared<EnvFrame>(oldEnv);
+        
+        // Agregar los parámetros del constructor al frame actual
+        for (size_t i = 0; i < expectedParams.size(); ++i) {
+            env->locals[expectedParams[i]] = args[i];
+        }
+        
+        // Si hay herencia, también necesitamos inicializar atributos del padre
+        if (!typeDecl->parentType.empty()) {
+            auto parentIt = types.find(typeDecl->parentType);
+            if (parentIt != types.end()) {
+                TypeDecl* parentTypeDecl = parentIt->second;
+                
+                // Inicializar atributos del padre primero
+                for (const auto& attr : parentTypeDecl->attributes) {
+                    const std::string& attrName = attr.first;
+                    Expr* initExpr = attr.second;
+                    
+                    if (initExpr) {
+                        initExpr->accept(this);
+                        Value initValue = lastValue;
+                        obj->setAttribute(attrName, initValue);
+                    } else {
+                        obj->setAttribute(attrName, Value(0.0));
+                    }
+                }
+            }
+        }
+        
+        // Inicializar atributos propios del tipo
         for (const auto& attr : typeDecl->attributes) {
             const std::string& attrName = attr.first;
             Expr* initExpr = attr.second;
             
             if (initExpr) {
-                // Evaluar la expresión de inicialización
+                // Evaluar la expresión de inicialización en el contexto con parámetros
                 initExpr->accept(this);
                 Value initValue = lastValue;
                 obj->setAttribute(attrName, initValue);
@@ -634,14 +691,9 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
                 obj->setAttribute(attrName, Value(0.0));
             }
         }
-          // Fallback para tipos sin atributos definidos (mientras arreglamos el parser)
-        if (typeDecl->attributes.empty()) {
-            // Usar atributos hardcodeados temporalmente
-            if (expr->typeName == "Point") {
-                obj->setAttribute("x", Value(4.0));
-                obj->setAttribute("y", Value(2.0));
-            }
-        }
+        
+        // Restaurar el frame anterior
+        env = std::move(oldEnv);
         
         lastValue = Value(obj);
     }void visit(MemberExpr *expr) override
@@ -665,14 +717,43 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
             throw std::runtime_error("'self' usado fuera del contexto de un método");
         }
         lastValue = Value(currentSelf);
-    }
-
-    void visit(BaseExpr *) override
+    }    void visit(BaseExpr *) override
     {
-        // Implementación básica - referencia a base
-        std::cout << "Base reference" << std::endl;
-        lastValue = Value(1.0); // placeholder
-    }    void visit(MemberAssignExpr *expr) override
+        // base() llama al método padre - necesitamos el contexto del método actual
+        if (!currentSelf) {
+            throw std::runtime_error("'base' usado fuera del contexto de un método");
+        }
+        
+        // Buscar el tipo padre
+        TypeDecl* currentTypeDecl = currentSelf->typeDeclaration;
+        if (!currentTypeDecl || currentTypeDecl->parentType.empty()) {
+            throw std::runtime_error("'base' usado en tipo sin padre");
+        }
+        
+        // Buscar la declaración del tipo padre
+        auto it = types.find(currentTypeDecl->parentType);
+        if (it == types.end()) {
+            throw std::runtime_error("Tipo padre no encontrado: " + currentTypeDecl->parentType);
+        }
+        
+        TypeDecl* parentTypeDecl = it->second;
+        
+        // Buscar el método "name" en el tipo padre
+        for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
+            const auto& method = parentTypeDecl->methods[i];
+            const std::string& methodName = method.first;
+            
+            if (methodName == "name") { // Asumimos que estamos en el método name()
+                if (i < parentTypeDecl->methodBodies.size() && parentTypeDecl->methodBodies[i]) {
+                    // Ejecutar el método padre
+                    parentTypeDecl->methodBodies[i]->accept(this);
+                    return;
+                }
+            }
+        }
+        
+        throw std::runtime_error("Método padre no encontrado");
+    }void visit(MemberAssignExpr *expr) override
     {
         // Evaluar el objeto
         expr->object->accept(this);

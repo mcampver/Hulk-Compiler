@@ -419,6 +419,49 @@ type_declaration:
         $$->name = std::string($2);
         free($2);
     }
+    | TYPE IDENT LPAREN ident_list RPAREN LBRACE type_body RBRACE {
+        $$ = $7; // $7 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        $$->params = std::move(*$4);
+        delete $4;
+        free($2);
+    }
+    | TYPE IDENT INHERITS IDENT LBRACE type_body RBRACE {
+        $$ = $6; // $6 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        $$->parentType = std::string($4);
+        free($2);
+        free($4);
+    }
+    | TYPE IDENT LPAREN ident_list RPAREN INHERITS IDENT LBRACE type_body RBRACE {
+        $$ = $9; // $9 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        $$->params = std::move(*$4);
+        $$->parentType = std::string($7);
+        delete $4;
+        free($2);
+        free($7);
+    }
+    | TYPE IDENT INHERITS IDENT LPAREN argument_list RPAREN LBRACE type_body RBRACE {
+        $$ = $9; // $9 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        $$->parentType = std::string($4);
+        $$->parentArgs = std::move(*$6);
+        delete $6;
+        free($2);
+        free($4);
+    }
+    | TYPE IDENT LPAREN ident_list RPAREN INHERITS IDENT LPAREN argument_list RPAREN LBRACE type_body RBRACE {
+        $$ = $12; // $12 es el TypeDecl construido por type_body
+        $$->name = std::string($2);
+        $$->params = std::move(*$4);
+        $$->parentType = std::string($7);
+        $$->parentArgs = std::move(*$9);
+        delete $4;
+        delete $9;
+        free($2);
+        free($7);
+    }
 ;
 
 // Cuerpo del tipo - construye gradualmente el TypeDecl
