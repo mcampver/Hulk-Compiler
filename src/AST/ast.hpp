@@ -174,10 +174,8 @@ struct BinaryExpr : Expr
         OP_GE,
         OP_EQ,
         OP_NEQ,        OP_OR,
-        OP_AND,
-        OP_CONCAT,
+        OP_AND,        OP_CONCAT,
         // Nuevos operadores
-        OP_INT_DIV,     // //
         OP_ENHANCED_MOD, // %%
         OP_TRIPLE_PLUS,  // +++
         OP_AND_SIMPLE,   // &

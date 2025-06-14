@@ -24,6 +24,7 @@ extern int yylineno;
 
 \n                          { yylineno++; }
 [ \t\r]+                    { /* skip whitespace */ }
+"//".*                      { /* skip single line comments */ }
 
 [0-9]+(\.[0-9]+)?           {
                               yylval.expr = new NumberExpr(atof(yytext));
@@ -90,7 +91,6 @@ extern int yylineno;
 \+                          { return PLUS; }
 \-                          { return MINUS; }
 \*                          { return MULT; }
-"//"                        { return INT_DIV; }
 \/                          { return DIV; }
 \**                         { return POW; }
 \^                          { return POW; }

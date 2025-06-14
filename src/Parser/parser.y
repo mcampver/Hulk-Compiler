@@ -60,7 +60,7 @@ TypeDecl* currentTypeDecl = nullptr;
 %token ASSIGN ASSIGN_DESTRUCT
 %token <expr> TRUE FALSE NUMBER STRING
 %token PLUS MINUS MULT DIV MOD POW CONCAT
-%token INT_DIV ENHANCED_MOD TRIPLE_PLUS
+%token ENHANCED_MOD TRIPLE_PLUS
 %token DEBUG TYPE ASSERT NEW SELF INHERITS BASE
 %token AND_SIMPLE OR_SIMPLE NOT CONCAT_SPACE
 %token LE GE EQ NEQ LESS_THAN GREATER_THAN OR AND
@@ -71,7 +71,7 @@ TypeDecl* currentTypeDecl = nullptr;
 %left EQ NEQ
 %left LESS_THAN GREATER_THAN LE GE
 %left PLUS MINUS TRIPLE_PLUS
-%left MULT DIV MOD INT_DIV ENHANCED_MOD
+%left MULT DIV MOD ENHANCED_MOD
 %left CONCAT CONCAT_SPACE
 %right POW
 %right NOT
@@ -250,10 +250,6 @@ expr:
           $$ = new BinaryExpr(BinaryExpr::OP_DIV, ExprPtr($1), ExprPtr($3));
       }    | expr MOD expr %prec MULT {
           $$ = new BinaryExpr(BinaryExpr::OP_MOD, ExprPtr($1), ExprPtr($3));
-      }
-
-    | expr INT_DIV expr %prec MULT {
-          $$ = new BinaryExpr(BinaryExpr::OP_INT_DIV, ExprPtr($1), ExprPtr($3));
       }
 
     | expr ENHANCED_MOD expr %prec MULT {

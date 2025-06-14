@@ -243,8 +243,6 @@ private:
         case BinaryExpr::OP_AND:
             return "&&";        case BinaryExpr::OP_CONCAT:
             return "@";
-        case BinaryExpr::OP_INT_DIV:
-            return "//";
         case BinaryExpr::OP_ENHANCED_MOD:
             return "%%";
         case BinaryExpr::OP_TRIPLE_PLUS:

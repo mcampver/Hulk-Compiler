@@ -241,14 +241,8 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         case BinaryExpr::OP_OR_SIMPLE:
             if (!l.isBool() || !r.isBool())
                 throw std::runtime_error("| requiere booleanos");
-            lastValue = Value(l.asBool() || r.asBool());
-            break;case BinaryExpr::OP_INT_DIV:
-            if (!l.isNumber() || !r.isNumber())
-            {
-                throw std::runtime_error("ambos miembros en division entera deben ser numeros");
-            }
-            lastValue = Value(static_cast<double>(static_cast<int>(l.asNumber()) / static_cast<int>(r.asNumber())));
-            break;        case BinaryExpr::OP_ENHANCED_MOD:
+            lastValue = Value(l.asBool() || r.asBool());            break;
+        case BinaryExpr::OP_ENHANCED_MOD:
             if (!l.isNumber() || !r.isNumber())
             {
                 throw std::runtime_error("ambos miembros en modulo mejorado deben ser numeros");

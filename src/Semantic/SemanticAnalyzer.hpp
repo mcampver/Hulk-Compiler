@@ -303,10 +303,8 @@ private:
             case BinaryExpr::Op::OP_GT: return ">";
             case BinaryExpr::Op::OP_LE: return "<=";
             case BinaryExpr::Op::OP_GE: return ">=";
-            case BinaryExpr::Op::OP_AND: return "&&";
-            case BinaryExpr::Op::OP_OR: return "||";
+            case BinaryExpr::Op::OP_AND: return "&&";            case BinaryExpr::Op::OP_OR: return "||";
             // Your enhanced operators
-            case BinaryExpr::Op::OP_INT_DIV: return "//";
             case BinaryExpr::Op::OP_ENHANCED_MOD: return "%%";
             case BinaryExpr::Op::OP_TRIPLE_PLUS: return "+++";
             case BinaryExpr::Op::OP_AND_SIMPLE: return "&";
@@ -319,13 +317,11 @@ private:
     
     /**
      * @brief Validate your enhanced operators
-     */
-    void validateEnhancedOperators(BinaryExpr::Op op, const TypeInfo& left, const TypeInfo& right) {
+     */    void validateEnhancedOperators(BinaryExpr::Op op, const TypeInfo& left, const TypeInfo& right) {
         switch (op) {
-            case BinaryExpr::Op::OP_INT_DIV:
             case BinaryExpr::Op::OP_ENHANCED_MOD:
                 if (!left.isNumeric() || !right.isNumeric()) {
-                    reportError("Integer division and enhanced modulo require numeric operands", 0);
+                    reportError("Enhanced modulo requires numeric operands", 0);
                 }
                 break;
                 
