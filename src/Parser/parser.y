@@ -1,4 +1,4 @@
-    %{
+%{
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -480,6 +480,25 @@ type_body:
         // Agregar método sin parámetros
         std::vector<std::string> emptyParams;
         $1->addMethod(std::string($2), emptyParams, $6);
+        free($2);
+        $$ = $1;
+    }    | type_body IDENT LPAREN ident_list RPAREN LBRACE stmt_list RBRACE {
+        // Agregar método con parámetros y bloque de código
+        std::vector<StmtPtr> stmts = std::move(*$7);
+        ExprBlock* block = new ExprBlock(std::move(stmts));
+        $1->addMethod(std::string($2), *$4, block);
+        delete $4;
+        delete $7;
+        free($2);
+        $$ = $1;
+    }
+    | type_body IDENT LPAREN RPAREN LBRACE stmt_list RBRACE {
+        // Agregar método sin parámetros y bloque de código
+        std::vector<std::string> emptyParams;
+        std::vector<StmtPtr> stmts = std::move(*$6);
+        ExprBlock* block = new ExprBlock(std::move(stmts));
+        $1->addMethod(std::string($2), emptyParams, block);
+        delete $6;
         free($2);
         $$ = $1;
     }

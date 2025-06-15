@@ -473,6 +473,35 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
             lastValue = Value(true);
             return;
         }
+        else if (e->callee == "str")
+        {
+            if (args.size() != 1)
+                throw std::runtime_error("str() espera 1 argumento");
+            
+            std::string result;
+            if (args[0].isNumber()) {
+                double num = args[0].asNumber();
+                if (num == floor(num)) {
+                    // Es un entero
+                    result = std::to_string((long long)num);
+                } else {
+                    // Es un decimal
+                    result = std::to_string(num);
+                    // Remover ceros trailing
+                    while (result.length() > 1 && result.back() == '0' && result[result.length()-2] != '.') {
+                        result.pop_back();
+                    }
+                }
+            } else if (args[0].isBool()) {
+                result = args[0].asBool() ? "true" : "false";
+            } else if (args[0].isString()) {
+                result = args[0].asString();
+            } else {
+                result = "Unknown";
+            }
+            lastValue = Value(result);
+            return;
+        }
         else
         {
             throw std::runtime_error("Función desconocida: " + e->callee);
@@ -609,22 +638,52 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         }
         
         TypeDecl* typeDecl = it->second;
-        
-        // Evaluar argumentos del constructor
+          // Evaluar argumentos del constructor
         std::vector<Value> args;
         for (auto &arg : expr->args) {
             arg->accept(this);
             args.push_back(lastValue);
         }
+          // Buscar el método init para determinar los parámetros esperados
+        std::vector<std::string> expectedParams;
+        bool hasInitMethod = false;
         
-        // Determinar los parámetros esperados (propios o heredados del padre)
-        std::vector<std::string> expectedParams = typeDecl->params;
+        // Primero buscar en el tipo actual
+        for (size_t i = 0; i < typeDecl->methods.size(); ++i) {
+            const auto& method = typeDecl->methods[i];
+            if (method.first == "init") {
+                expectedParams = method.second;
+                hasInitMethod = true;
+                break;
+            }
+        }
         
-        // Si el tipo no tiene parámetros propios pero tiene padre, heredar del padre
-        if (expectedParams.empty() && !typeDecl->parentType.empty()) {
+        // Si no tiene init propio, buscar en el tipo padre
+        if (!hasInitMethod && !typeDecl->parentType.empty()) {
             auto parentIt = types.find(typeDecl->parentType);
             if (parentIt != types.end()) {
-                expectedParams = parentIt->second->params;
+                TypeDecl* parentTypeDecl = parentIt->second;
+                for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
+                    const auto& method = parentTypeDecl->methods[i];
+                    if (method.first == "init") {
+                        expectedParams = method.second;
+                        hasInitMethod = true;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Si no hay método init en ningún lado, usar parámetros del tipo (comportamiento anterior)
+        if (!hasInitMethod) {
+            expectedParams = typeDecl->params;
+            
+            // Si el tipo no tiene parámetros propios pero tiene padre, heredar del padre
+            if (expectedParams.empty() && !typeDecl->parentType.empty()) {
+                auto parentIt = types.find(typeDecl->parentType);
+                if (parentIt != types.end()) {
+                    expectedParams = parentIt->second->params;
+                }
             }
         }
         
@@ -669,8 +728,7 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
                 }
             }
         }
-        
-        // Inicializar atributos propios del tipo
+          // Inicializar atributos propios del tipo
         for (const auto& attr : typeDecl->attributes) {
             const std::string& attrName = attr.first;
             Expr* initExpr = attr.second;
@@ -683,6 +741,86 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
             } else {
                 // Valor por defecto si no hay inicialización
                 obj->setAttribute(attrName, Value(0.0));
+            }
+        }        // Buscar y ejecutar el constructor init si existe
+        bool initExecuted = false;
+        for (size_t i = 0; i < typeDecl->methods.size(); ++i) {
+            const auto& method = typeDecl->methods[i];
+            if (method.first == "init") {
+                // Verificar que los argumentos coincidan con los parámetros del constructor
+                if (args.size() != method.second.size()) {
+                    throw std::runtime_error("Constructor init espera " + 
+                                           std::to_string(method.second.size()) + 
+                                           " argumentos, pero se proporcionaron " + 
+                                           std::to_string(args.size()));
+                }
+                
+                // Establecer contexto de self
+                auto oldSelf = currentSelf;
+                currentSelf = obj;
+                
+                // Crear frame para la ejecución del constructor
+                auto oldEnv = env;
+                env = std::make_shared<EnvFrame>(oldEnv);
+                
+                // Agregar parámetros del constructor
+                for (size_t j = 0; j < method.second.size(); ++j) {
+                    env->locals[method.second[j]] = args[j];
+                }
+                
+                // Ejecutar el cuerpo del constructor
+                if (i < typeDecl->methodBodies.size() && typeDecl->methodBodies[i]) {
+                    typeDecl->methodBodies[i]->accept(this);
+                }
+                
+                // Restaurar entorno y contexto
+                env = oldEnv;
+                currentSelf = oldSelf;
+                initExecuted = true;
+                break;
+            }
+        }
+        
+        // Si no tiene init propio, usar el del padre
+        if (!initExecuted && !typeDecl->parentType.empty()) {
+            auto parentIt = types.find(typeDecl->parentType);
+            if (parentIt != types.end()) {
+                TypeDecl* parentTypeDecl = parentIt->second;
+                for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
+                    const auto& method = parentTypeDecl->methods[i];
+                    if (method.first == "init") {
+                        // Verificar que los argumentos coincidan con los parámetros del constructor padre
+                        if (args.size() != method.second.size()) {
+                            throw std::runtime_error("Constructor padre init espera " + 
+                                                   std::to_string(method.second.size()) + 
+                                                   " argumentos, pero se proporcionaron " + 
+                                                   std::to_string(args.size()));
+                        }
+                        
+                        // Establecer contexto de self
+                        auto oldSelf = currentSelf;
+                        currentSelf = obj;
+                        
+                        // Crear frame para la ejecución del constructor padre
+                        auto oldEnv = env;
+                        env = std::make_shared<EnvFrame>(oldEnv);
+                        
+                        // Agregar parámetros del constructor
+                        for (size_t j = 0; j < method.second.size(); ++j) {
+                            env->locals[method.second[j]] = args[j];
+                        }
+                        
+                        // Ejecutar el cuerpo del constructor padre
+                        if (i < parentTypeDecl->methodBodies.size() && parentTypeDecl->methodBodies[i]) {
+                            parentTypeDecl->methodBodies[i]->accept(this);
+                        }
+                        
+                        // Restaurar entorno y contexto
+                        env = oldEnv;
+                        currentSelf = oldSelf;
+                        break;
+                    }
+                }
             }
         }
         
@@ -768,6 +906,74 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         lastValue = newValue;
     }    void visit(MethodCallExpr *expr) override
     {
+        // Verificar si es una llamada a método base
+        BaseExpr* baseExpr = dynamic_cast<BaseExpr*>(expr->object.get());
+        if (baseExpr) {
+            // Es una llamada base.method()
+            if (!currentSelf) {
+                throw std::runtime_error("'base' usado fuera del contexto de un método");
+            }
+            
+            // Buscar el tipo padre
+            TypeDecl* currentTypeDecl = currentSelf->typeDeclaration;
+            if (!currentTypeDecl || currentTypeDecl->parentType.empty()) {
+                throw std::runtime_error("'base' usado en tipo sin padre");
+            }
+            
+            // Buscar la declaración del tipo padre
+            auto it = types.find(currentTypeDecl->parentType);
+            if (it == types.end()) {
+                throw std::runtime_error("Tipo padre no encontrado: " + currentTypeDecl->parentType);
+            }
+            
+            TypeDecl* parentTypeDecl = it->second;
+            
+            // Evaluar argumentos
+            std::vector<Value> args;
+            for (auto &arg : expr->args) {
+                arg->accept(this);
+                args.push_back(lastValue);
+            }
+            
+            // Buscar el método en el tipo padre
+            for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
+                const auto& method = parentTypeDecl->methods[i];
+                const std::string& methodName = method.first;
+                const std::vector<std::string>& params = method.second;
+                
+                if (methodName == expr->method && params.size() == args.size()) {
+                    // Encontramos el método con el número correcto de parámetros
+                    if (i < parentTypeDecl->methodBodies.size() && parentTypeDecl->methodBodies[i]) {
+                        // Mantener el contexto de self actual (no cambiar currentSelf)
+                        auto oldSelf = currentSelf;
+                        
+                        // Crear nuevo frame para parámetros del método
+                        auto oldEnv = env;
+                        env = std::make_shared<EnvFrame>(oldEnv);
+                        
+                        // Asignar parámetros
+                        for (size_t j = 0; j < params.size(); ++j) {
+                            env->locals[params[j]] = args[j];
+                        }
+                        
+                        // Ejecutar cuerpo del método padre
+                        parentTypeDecl->methodBodies[i]->accept(this);
+                        Value result = lastValue;
+                        
+                        // Restaurar contexto
+                        env = std::move(oldEnv);
+                        currentSelf = oldSelf;
+                        
+                        lastValue = result;
+                        return;
+                    }
+                }
+            }
+            
+            throw std::runtime_error("Método padre no encontrado: " + expr->method);
+        }
+        
+        // Comportamiento normal para llamadas de método regulares
         // Evaluar el objeto
         expr->object->accept(this);
         

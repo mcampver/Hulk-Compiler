@@ -1,87 +1,23 @@
+
+
 type Point {
-    x = 4;
-    y = 8;
+    x = 0;
+    y = 0;
     
-    getX() => self.x;
-    getY() => self.y;
-    setX(newX) => self.x := newX;
-    sum() => self.x + self.y;
-};
+    init(px, py) {
+        self.x := px;
+        self.y := py;
+    }
+    
+    distance() => sqrt(self.x * self.x + self.y * self.y);
+    
+    toString() => "(" @ str(self.x) @ ", " @ str(self.y) @ ")";
+}
 
-type Circle {
-    radius = 5;
-    
-    getRadius() => self.radius;
-    area() => self.radius * self.radius * 3;
-    setRadius(newRadius) => self.radius := newRadius;
-};
-
-type Counter {
-    value = 0;
-    step = 1;
-    
-    increment() => self.value := self.value + self.step;
-    getValue() => self.value;
-    setStep(newStep) => self.step := newStep;
-};
-
-{
-    print("=== HULK TYPE SYSTEM COMPREHENSIVE TEST ===");
-    
-    let pt = new Point() in {
-        print("Point Test:");
-        print("Initial x: " @ pt.getX());
-        print("Initial y: " @ pt.getY());
-        print("Sum: " @ pt.sum());
-        
-        pt.setX(10);
-        print("After setX(10): " @ pt.getX());
-        print("New sum: " @ pt.sum());
-        print("");
-    };
-    
-    let circle = new Circle() in {
-        print("Circle Test:");
-        print("Initial radius: " @ circle.getRadius());
-        print("Initial area: " @ circle.area());
-        
-        circle.setRadius(3);
-        print("After setRadius(3): " @ circle.getRadius());
-        print("New area: " @ circle.area());
-        print("");
-    };
-    
-    let counter1 = new Counter() in
-    let counter2 = new Counter() in {
-        print("Multiple Instances Test:");
-        
-        counter1.setStep(5);
-        counter2.setStep(10);
-        
-        print("Counter1 initial: " @ counter1.getValue());
-        print("Counter2 initial: " @ counter2.getValue());
-        
-        counter1.increment();
-        counter1.increment();
-        counter2.increment();
-        
-        print("Counter1 after 2 increments (step 5): " @ counter1.getValue());
-        print("Counter2 after 1 increment (step 10): " @ counter2.getValue());
-        
-        print("Combined value: " @ (counter1.getValue() + counter2.getValue()));
-        print("");
-    };
-    
-    let final_pt = new Point() in
-    let final_circle = new Circle() in {
-        print("FINAL INTEGRATION TEST:");
-        
-        final_pt.setX(final_circle.getRadius());
-        print("Point x set to circle radius: " @ final_pt.getX());
-        
-        let combined = final_pt.sum() + final_circle.area() in
-        print("Combined calculation: " @ combined);
-        
-        print("=== ALL TESTS COMPLETED SUCCESSFULLY ===");
-    };
-};
+let p1 = new Point(3, 4) in
+let p2 = new Point(0, 0) in {
+    print(p1.toString());    // (3, 4)
+    print(p1.distance());   // 5
+    print(p2.toString());   // (0, 0)
+    print(p2.distance());   // 0
+}
