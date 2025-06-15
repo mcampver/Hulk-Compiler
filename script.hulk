@@ -12,7 +12,7 @@ type Point {
     distance() => sqrt(self.x * self.x + self.y * self.y);
     
     toString() => "(" @ str(self.x) @ ", " @ str(self.y) @ ")";
-}
+};
 
 let p1 = new Point(3, 4) in
 let p2 = new Point(0, 0) in {
@@ -20,4 +20,4 @@ let p2 = new Point(0, 0) in {
     print(p1.distance());   // 5
     print(p2.toString());   // (0, 0)
     print(p2.distance());   // 0
-}
+};
