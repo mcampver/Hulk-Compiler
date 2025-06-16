@@ -1,23 +1,183 @@
-
-
-type Point {
-    x = 0;
-    y = 0;
+// ===== PRUEBA 1: HERENCIA MÚLTIPLE NIVELES =====
+type Vehicle {
+    wheels = 4;
+    fuel = 100.0;
     
-    init(px, py) {
-        self.x := px;
-        self.y := py;
+    init(w, f) {
+        self.wheels := w;
+        self.fuel := f;
     }
     
-    distance() => sqrt(self.x * self.x + self.y * self.y);
-    
-    toString() => "(" @ str(self.x) @ ", " @ str(self.y) @ ")";
+    drive() => "Vehicle moving with " @ str(self.wheels) @ " wheels";
+    refuel(amount) {
+        self.fuel := self.fuel + amount;
+    }
+    getFuel() => self.fuel;
 };
 
-let p1 = new Point(3, 4) in
-let p2 = new Point(0, 0) in {
-    print(p1.toString());    // (3, 4)
-    print(p1.distance());   // 5
-    print(p2.toString());   // (0, 0)
-    print(p2.distance());   // 0
+type Car inherits Vehicle {
+    brand = "Generic";
+    
+    init(w, f, b) {
+        base.init(w, f);
+        self.brand := b;
+    }
+    
+    drive() => self.brand @ " car driving smoothly";
+    honk() => self.brand @ " goes BEEP BEEP!";
+};
+
+type SportsCar inherits Car {
+    maxSpeed = 200.0;
+    
+    init(w, f, b, speed) {
+        base.init(w, f, b);
+        self.maxSpeed := speed;
+    }
+    
+    drive() => "Super fast " @ self.brand @ " at " @ str(self.maxSpeed) @ " km/h!";
+    turbo() => "TURBO MODE: " @ str(self.maxSpeed * 1.5) @ " km/h!";
+};
+
+// ===== PRUEBA 2: OPERACIONES MATEMÁTICAS COMPLEJAS =====
+type Calculator {
+    result = 0.0;
+    
+    init() {
+        self.result := 0.0;
+    }
+    
+    add(x) {
+        self.result := self.result + x;
+    }
+    
+    multiply(x) {
+        self.result := self.result * x;
+    }
+    
+    power(exp) {
+        self.result := pow(self.result, exp);
+    }
+    
+    getResult() => self.result;
+    
+    // Operación compleja con múltiples funciones matemáticas
+    complexCalc(x, y) => sqrt(pow(x, 2.0) + pow(y, 2.0)) + sin(x) * cos(y);
+};
+
+// ===== PRUEBA 3: MANEJO DE STRINGS COMPLEJOS =====
+type TextProcessor {
+    text = "";
+    
+    init(t) {
+        self.text := t;
+    }
+    
+    addPrefix(prefix) {
+        self.text := prefix @ self.text;
+    }
+    
+    addSuffix(suffix) {
+        self.text := self.text @ suffix;
+    }
+    
+    wrapWith(wrapper) {
+        self.text := wrapper @ self.text @ wrapper;
+    }
+    
+    getText() => self.text;
+    
+    // Concatenación múltiple
+    buildComplexString(a, b, c) => a @ " -> " @ b @ " -> " @ c @ " [DONE]";
+};
+
+// ===== PRUEBA 4: HERENCIA CON MÚLTIPLES CAMPOS =====
+type Person {
+    name = "Unknown";
+    age = 0.0;
+    email = "none@example.com";
+    
+    init(n, a, e) {
+        self.name := n;
+        self.age := a;
+        self.email := e;
+    }
+    
+    introduce() => "Hi, I'm " @ self.name @ ", " @ str(self.age) @ " years old";
+    getContact() => self.name @ " <" @ self.email @ ">";
+};
+
+type Employee inherits Person {
+    company = "Unemployed";
+    salary = 0.0;
+    
+    init(n, a, e, c, s) {
+        base.init(n, a, e);
+        self.company := c;
+        self.salary := s;
+    }
+    
+    introduce() => "I'm " @ self.name @ ", I work at " @ self.company;
+    getSalaryInfo() => self.name @ " earns $" @ str(self.salary) @ " at " @ self.company;
+    
+    giveRaise(amount) {
+        self.salary := self.salary + amount;
+    }
+};
+
+// ===== EJECUCIÓN DE PRUEBAS =====
+let ferrari = new SportsCar(4, 80.0, "Ferrari", 350.0) in
+let toyota = new Car(4, 60.0, "Toyota") in
+let bike = new Vehicle(2, 0.0) in
+
+let calc = new Calculator() in
+let processor = new TextProcessor("Hello") in
+
+let john = new Person("John Doe", 30.0, "john@email.com") in
+let alice = new Employee("Alice Smith", 28.0, "alice@company.com", "TechCorp", 75000.0) in
+
+{
+    // Prueba herencia de 3 niveles
+    print("=== PRUEBA HERENCIA MÚLTIPLE ===");
+    print(ferrari.drive());
+    print(ferrari.turbo());
+    print(ferrari.honk());
+    print(toyota.drive());
+    print(bike.drive());
+    
+    // Prueba refuel en diferentes niveles
+    ferrari.refuel(20.0);
+    print("Ferrari fuel: " @ str(ferrari.getFuel()));
+    
+    // Prueba operaciones matemáticas
+    print("=== PRUEBA MATEMÁTICAS ===");
+    calc.add(10.0);
+    calc.multiply(5.0);
+    calc.power(2.0);
+    print("Calculator result: " @ str(calc.getResult()));
+    print("Complex calc: " @ str(calc.complexCalc(3.0, 4.0)));
+    
+    // Prueba manipulación de strings
+    print("=== PRUEBA STRINGS ===");
+    processor.addPrefix(">>> ");
+    processor.addSuffix(" <<<");
+    processor.wrapWith("**");
+    print(processor.getText());
+    print(processor.buildComplexString("A", "B", "C"));
+    
+    // Prueba herencia con múltiples campos
+    print("=== PRUEBA PERSONAS ===");
+    print(john.introduce());
+    print(john.getContact());
+    print(alice.introduce());
+    print(alice.getSalaryInfo());
+    
+    alice.giveRaise(5000.0);
+    print("After raise: " @ alice.getSalaryInfo());
+    
+    // Prueba operaciones mixtas número/string
+    print("=== PRUEBA MIXTA ===");
+    print("Pi approximation: " @ str(3.14159));
+    print("Square root of 16: " @ str(sqrt(16.0)));
+    print("5 to the power of 3: " @ str(pow(5.0, 3.0)));
 };

@@ -1,0 +1,18 @@
+type Point {
+    x = 0.0;
+    y = 0.0;
+    
+    init(px, py) {
+        self.x := px;
+        self.y := py;
+    }
+    
+    distance() => sqrt(self.x * self.x + self.y * self.y);
+    
+    toString() => "(" @ str(self.x) @ ", " @ str(self.y) @ ")";
+};
+
+let p = new Point(3.0, 4.0) in {
+    print("Distance: " @ str(p.distance()));
+    print("Point: " @ p.toString());
+};

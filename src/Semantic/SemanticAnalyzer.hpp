@@ -22,7 +22,10 @@ private:
     TypeInfo current_type_;
     
 public:
-    SemanticAnalyzer() : current_type_(TypeInfo::Kind::Unknown) {}
+    SemanticAnalyzer() : current_type_(TypeInfo::Kind::Unknown) {
+        // Registrar funciones built-in
+        registerBuiltinFunctions();
+    }
     
     /**
      * @brief Analyze a program (entry point)
@@ -394,5 +397,44 @@ private:
         
         // For now, assume method call succeeds
         current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // Should be the method return type
+    }
+
+    /**
+     * @brief Register built-in functions in the symbol table
+     */
+    void registerBuiltinFunctions() {
+        // Math functions
+        symbol_table_.declareFunction("pow", {TypeInfo(TypeInfo::Kind::Number), TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("sqrt", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("sin", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("cos", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("tan", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("exp", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("log", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::Number), 0);
+        
+        // String functions
+        symbol_table_.declareFunction("str", {TypeInfo(TypeInfo::Kind::Number)}, 
+                                     TypeInfo(TypeInfo::Kind::String), 0);
+        
+        // I/O functions
+        symbol_table_.declareFunction("print", {TypeInfo(TypeInfo::Kind::Unknown)}, 
+                                     TypeInfo(TypeInfo::Kind::Unknown), 0);
+        
+        // Debug functions
+        symbol_table_.declareFunction("debug", {TypeInfo(TypeInfo::Kind::Unknown)}, 
+                                     TypeInfo(TypeInfo::Kind::Unknown), 0);
+        symbol_table_.declareFunction("type", {TypeInfo(TypeInfo::Kind::Unknown)}, 
+                                     TypeInfo(TypeInfo::Kind::String), 0);
+        
+        // Constants
+        symbol_table_.declareFunction("PI", {}, TypeInfo(TypeInfo::Kind::Number), 0);
+        symbol_table_.declareFunction("E", {}, TypeInfo(TypeInfo::Kind::Number), 0);
     }
 };

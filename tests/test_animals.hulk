@@ -1,0 +1,27 @@
+type Animal {
+    name = "Unknown";
+    
+    init(n) {
+        self.name := n;
+    }
+    
+    speak() => self.name @ " makes a sound";
+};
+
+type Dog inherits Animal {
+    breed = "Mixed";
+    
+    init(n, b) {
+        base.init(n);
+        self.breed := b;
+    }
+    
+    speak() => self.name @ " barks: Woof!";
+    
+    getInfo() => self.name @ " is a " @ self.breed;
+};
+
+let dog = new Dog("Rex", "German Shepherd") in {
+    print(dog.speak());
+    print(dog.getInfo());
+};

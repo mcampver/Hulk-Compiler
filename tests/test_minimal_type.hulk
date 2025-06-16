@@ -1,0 +1,11 @@
+// Test minimal de tipos para debugging
+type Animal {
+    name = "Unknown";
+    
+    init(n) {
+        self.name := n;
+    }
+};
+
+let animal = new Animal("Test") in
+animal;

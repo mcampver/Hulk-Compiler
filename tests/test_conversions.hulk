@@ -1,0 +1,3 @@
+function test() => print("The number is: " @ str(42.5));
+
+test();

@@ -19,6 +19,11 @@ int hulk_logical_not(int a);
 void hulk_debug(const char* format, ...);
 char* hulk_type_of(const char* type_name);
 void hulk_assert(int condition, const char* message);
+char* hulk_str_number(double value);
+char* hulk_str_string(const char* str);
+char* hulk_str_boolean(int value);
+char* hulk_double_to_str(double value);
+char* hulk_bool_to_str(int value);
 
 // String operations
 char* hulk_string_concat(const char* a, const char* b) {
@@ -209,4 +214,58 @@ void hulk_print_boolean(int value) {
 
 void hulk_println() {
     printf("\n");
+}
+
+// String conversion functions (str built-in)
+char* hulk_str_number(double value) {
+    char* result = malloc(32); // Suficiente para números double
+    if (!result) {
+        fprintf(stderr, "Error: Memory allocation failed in str(number)\n");
+        exit(1);
+    }
+    
+    if (floor(value) == value) {
+        snprintf(result, 32, "%.0f", value);
+    } else {
+        snprintf(result, 32, "%g", value);
+    }
+    return result;
+}
+
+char* hulk_str_string(const char* str) {
+    if (!str) str = "";
+    size_t len = strlen(str);
+    char* result = malloc(len + 1);
+    if (!result) {
+        fprintf(stderr, "Error: Memory allocation failed in str(string)\n");
+        exit(1);
+    }
+    strcpy(result, str);
+    return result;
+}
+
+char* hulk_str_boolean(int value) {
+    const char* bool_str = value ? "true" : "false";
+    size_t len = strlen(bool_str);
+    char* result = malloc(len + 1);
+    if (!result) {
+        fprintf(stderr, "Error: Memory allocation failed in str(boolean)\n");
+        exit(1);
+    }
+    strcpy(result, bool_str);
+    return result;
+}
+
+char* hulk_double_to_str(double value) {
+    char* result = malloc(32);
+    if (!result) {
+        fprintf(stderr, "Error: Memory allocation failed in double_to_str\n");
+        exit(1);
+    }
+    snprintf(result, 32, "%.17g", value); // Precision suficiente para double
+    return result;
+}
+
+char* hulk_bool_to_str(int value) {
+    return value ? hulk_str_string("true") : hulk_str_string("false");
 }

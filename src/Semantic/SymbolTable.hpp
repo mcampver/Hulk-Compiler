@@ -150,6 +150,7 @@ private:
         
         // String functions
         declareFunction("print", {TypeInfo(TypeInfo::Kind::String)}, TypeInfo(TypeInfo::Kind::String));
+        declareFunction("str", {TypeInfo(TypeInfo::Kind::Unknown)}, TypeInfo(TypeInfo::Kind::String));
         
         // Your enhanced built-in functions
         declareFunction("debug", {TypeInfo(TypeInfo::Kind::Unknown)}, TypeInfo(TypeInfo::Kind::String));

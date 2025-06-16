@@ -1,0 +1,3 @@
+function power(base, exp) => 1;
+
+print(power(2, 4));

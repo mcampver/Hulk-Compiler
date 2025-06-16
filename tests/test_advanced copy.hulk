@@ -1,0 +1,32 @@
+// Prueba avanzada del compilador HULK con LLVM
+
+// Test 1: Operaciones matemáticas
+let result1 = 2 + 3 * 4 in
+print("2 + 3 * 4 = " @ str(result1));
+
+// Test 2: Funciones matemáticas 
+let angle = 1.57 in  // aproximadamente π/2
+print("sin(π/2) ≈ " @ str(sin(angle)));
+
+// Test 3: Operadores mejorados
+let a = 10 in
+let b = 3 in {
+    print("10 % 3 = " @ str(a % b));
+    print("Concatenación: " @ str(a) @ " + " @ str(b) @ " = " @ str(a + b));
+};
+
+// Test 4: Expresiones condicionales
+let x = 5 in
+if (x > 3) 
+    print("x es mayor que 3")
+else 
+    print("x no es mayor que 3");
+
+// Test 5: Función recursiva simple
+function factorial(n) => 
+    if (n <= 1) 1 
+    else n * factorial(n - 1);
+
+print("5! = " @ str(factorial(5)));
+
+print("🎉 ¡Todas las pruebas completadas exitosamente!");

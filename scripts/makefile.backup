@@ -1,0 +1,189 @@
+# HULK Compiler - Makefile simplificado para MSYS2
+# Configuración manual para garantizar detección de LLVM
+
+# Forzar configuración MSYS2 con LLVM
+detected_ENV := MSYS2
+EXE_EXT := .exe
+ENABLE_LLVM := 1
+
+# Configuración LLVM manual
+LLVM_CONFIG := llvm-config
+LLVM_DIR := /mingw64
+LLVM_CXXFLAGS_RAW := $(shell llvm-config --cxxflags 2>/dev/null)
+# Filtrar flags problemáticos y agregar excepciones
+LLVM_CXXFLAGS := $(filter-out -fno-exceptions,$(LLVM_CXXFLAGS_RAW)) -fexceptions
+LLVM_LDFLAGS := $(shell llvm-config --ldflags --libs core 2>/dev/null)
+
+# Verificar que LLVM esté disponible
+LLVM_CHECK := $(shell command -v llvm-config >/dev/null 2>&1 && echo "OK" || echo "MISSING")
+
+# Compiladores
+CXX := clang++
+CC := clang
+
+# Flags de compilación (habilitando excepciones)
+CXXFLAGS = -std=c++17 -Wall -Wextra -I src -DENABLE_LLVM=1 -fexceptions $(LLVM_CXXFLAGS)
+CFLAGS = -std=c99 -Wall -Wextra
+LDFLAGS = $(LLVM_LDFLAGS)
+
+# Herramientas de build
+FLEX := flex
+BISON := bison
+
+# Archivos fuente
+LEXER_SRC = src/Lexer/lexer.l
+PARSER_SRC = src/Parser/parser.y
+MAIN_SRC = src/main.cpp
+RUNTIME_SRC = src/Runtime/hulk_runtime.c
+
+# Archivos generados
+LEXER_GEN = src/Lexer/lex.yy.cpp
+PARSER_GEN_CPP = src/Parser/parser.tab.cpp
+PARSER_GEN_HPP = src/Parser/parser.tab.hpp
+
+# Directorios de código fuente
+AST_SOURCES = $(wildcard src/AST/*.cpp)
+EVALUATOR_SOURCES = $(wildcard src/Evaluator/*.cpp)
+PRINTVISITOR_SOURCES = $(wildcard src/PrintVisitor/*.cpp)
+VALUE_SOURCES = $(wildcard src/Value/*.cpp)
+SCOPE_SOURCES = $(wildcard src/Scope/*.cpp)
+SEMANTIC_SOURCES = $(wildcard src/Semantic/*.cpp)
+CODEGEN_SOURCES = $(wildcard src/CodeGen/*.cpp)
+
+# Archivos objeto
+PARSER_OBJ = $(PARSER_GEN_CPP:.cpp=.o)
+LEXER_OBJ = $(LEXER_GEN:.cpp=.o)
+MAIN_OBJ = $(MAIN_SRC:.cpp=.o)
+RUNTIME_OBJ = $(RUNTIME_SRC:.c=.o)
+
+AST_OBJS = $(AST_SOURCES:.cpp=.o)
+EVALUATOR_OBJS = $(EVALUATOR_SOURCES:.cpp=.o)
+PRINTVISITOR_OBJS = $(PRINTVISITOR_SOURCES:.cpp=.o)
+VALUE_OBJS = $(VALUE_SOURCES:.cpp=.o)
+SCOPE_OBJS = $(SCOPE_SOURCES:.cpp=.o)
+SEMANTIC_OBJS = $(SEMANTIC_SOURCES:.cpp=.o)
+CODEGEN_OBJS = $(CODEGEN_SOURCES:.cpp=.o)
+
+ALL_OBJS = $(PARSER_OBJ) $(LEXER_OBJ) $(MAIN_OBJ) $(RUNTIME_OBJ) \
+           $(AST_OBJS) $(EVALUATOR_OBJS) $(PRINTVISITOR_OBJS) \
+           $(VALUE_OBJS) $(SCOPE_OBJS) $(SEMANTIC_OBJS) $(CODEGEN_OBJS)
+
+# Directorio de salida
+BIN_DIR = hulk
+EXECUTABLE = $(BIN_DIR)/hulk_compiler$(EXE_EXT)
+
+# Colores para salida
+RED := \033[31m
+GREEN := \033[32m
+YELLOW := \033[33m
+BLUE := \033[34m
+CYAN := \033[36m
+RESET := \033[0m
+
+# Objetivo por defecto
+all: info compile
+
+# Mostrar información de compilación
+info:
+	@echo "$(CYAN)🔨 HULK Compiler Build System$(RESET)"
+	@echo "$(BLUE)📍 Entorno: $(detected_ENV)$(RESET)"
+	@echo "$(BLUE)🔧 Compilador: $(CXX)$(RESET)"
+ifeq ($(LLVM_CHECK),OK)
+	@echo "$(GREEN)⚡ LLVM: Habilitado ($(shell llvm-config --version))$(RESET)"
+	@echo "$(GREEN)📂 LLVM_DIR: $(LLVM_DIR)$(RESET)"
+	@echo "$(GREEN)🔗 LLVM Libs: $(shell llvm-config --libs core | head -c 50)...$(RESET)"
+else
+	@echo "$(RED)❌ LLVM: No encontrado$(RESET)"
+	@echo "$(YELLOW)💡 Ejecuta: pacman -S mingw-w64-x86_64-llvm mingw-w64-x86_64-clang$(RESET)"
+endif
+	@echo "$(BLUE)🎯 Objetivo: $(EXECUTABLE)$(RESET)"
+
+# Verificar entorno
+check-env:
+	@echo "$(CYAN)🔍 Verificando entorno MSYS2...$(RESET)"
+	@echo "$(BLUE)MSYSTEM: $(MSYSTEM)$(RESET)"
+	@echo "$(BLUE)PATH incluye MinGW64: $(shell echo $$PATH | grep -o '/mingw64/bin' || echo 'NO')$(RESET)"
+	@command -v clang++ && echo "$(GREEN)✅ clang++ encontrado$(RESET)" || echo "$(RED)❌ clang++ no encontrado$(RESET)"
+	@command -v llvm-config && echo "$(GREEN)✅ llvm-config encontrado$(RESET)" || echo "$(RED)❌ llvm-config no encontrado$(RESET)"
+	@command -v flex && echo "$(GREEN)✅ flex encontrado$(RESET)" || echo "$(RED)❌ flex no encontrado$(RESET)"
+	@command -v bison && echo "$(GREEN)✅ bison encontrado$(RESET)" || echo "$(RED)❌ bison no encontrado$(RESET)"
+
+# Crear directorio de salida
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
+# Generar parser
+$(PARSER_GEN_CPP) $(PARSER_GEN_HPP): $(PARSER_SRC)
+	@echo "$(BLUE)🔧 Generando parser con Bison...$(RESET)"
+	$(BISON) -d -o $(PARSER_GEN_CPP) $(PARSER_SRC)
+
+# Generar lexer
+$(LEXER_GEN): $(LEXER_SRC) $(PARSER_GEN_HPP)
+	@echo "$(BLUE)🔧 Generando lexer con Flex...$(RESET)"
+	$(FLEX) -o $(LEXER_GEN) $(LEXER_SRC)
+
+# Compilar archivos C++
+%.o: %.cpp
+	@echo "$(BLUE)🔨 Compilando $(notdir $<)...$(RESET)"
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compilar archivos C
+%.o: %.c
+	@echo "$(BLUE)🔨 Compilando $(notdir $<)...$(RESET)"
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Enlazar ejecutable
+$(EXECUTABLE): $(BIN_DIR) $(ALL_OBJS)
+	@echo "$(CYAN)🔗 Enlazando ejecutable con LLVM...$(RESET)"
+	$(CXX) $(ALL_OBJS) -o $(EXECUTABLE) $(LDFLAGS)
+	@echo "$(GREEN)✅ Compilación exitosa: $(EXECUTABLE)$(RESET)"
+	@echo "$(GREEN)🎉 LLVM integrado correctamente!$(RESET)"
+
+# Compilar proyecto
+compile: $(EXECUTABLE)
+
+# Probar compilación
+test: compile
+	@echo "$(CYAN)🧪 Ejecutando prueba básica...$(RESET)"
+	@if [ -f "script.hulk" ]; then \
+		echo "$(BLUE)📄 Ejecutando script.hulk...$(RESET)"; \
+		./$(EXECUTABLE) script.hulk; \
+	else \
+		echo "$(YELLOW)⚠️  script.hulk no encontrado, creando prueba básica...$(RESET)"; \
+		echo 'print("¡Hola desde HULK con LLVM!");' > test_basic.hulk; \
+		./$(EXECUTABLE) test_basic.hulk; \
+	fi
+
+# Limpiar archivos generados
+clean:
+	@echo "$(YELLOW)🧹 Limpiando archivos generados...$(RESET)"
+	rm -f $(LEXER_GEN) $(PARSER_GEN_CPP) $(PARSER_GEN_HPP)
+	rm -f $(ALL_OBJS)
+	rm -f $(EXECUTABLE)
+	@echo "$(GREEN)✅ Limpieza completada$(RESET)"
+
+# Limpieza completa
+distclean: clean
+	@echo "$(YELLOW)🧹 Limpieza profunda...$(RESET)"
+	find . -name "*.bak" -delete 2>/dev/null || true
+	find . -name "*~" -delete 2>/dev/null || true
+	find . -name "*.tmp" -delete 2>/dev/null || true
+
+# Mostrar ayuda
+help:
+	@echo "$(CYAN)📖 HULK Compiler - Comandos disponibles:$(RESET)"
+	@echo "$(GREEN)  make all$(RESET)          - Mostrar info y compilar"
+	@echo "$(GREEN)  make compile$(RESET)      - Compilar el proyecto"
+	@echo "$(GREEN)  make test$(RESET)         - Compilar y ejecutar prueba"
+	@echo "$(GREEN)  make clean$(RESET)        - Limpiar archivos generados"
+	@echo "$(GREEN)  make distclean$(RESET)    - Limpieza profunda"
+	@echo "$(GREEN)  make check-env$(RESET)    - Verificar entorno"
+	@echo "$(GREEN)  make info$(RESET)         - Mostrar información de build"
+	@echo "$(GREEN)  make help$(RESET)         - Mostrar esta ayuda"
+
+# Objetivos falsos
+.PHONY: all compile test clean distclean help info check-env
+
+# Dependencias
+$(MAIN_OBJ): $(PARSER_GEN_HPP)
+$(LEXER_OBJ): $(PARSER_GEN_HPP)

@@ -1,0 +1,5 @@
+// Test completo de generación LLVM - funciones con parámetros
+function add(a, b) => a + b;
+function greet(name) => "Hello " @ name;
+
+add(5, 3);

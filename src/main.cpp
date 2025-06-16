@@ -16,7 +16,7 @@
 #endif
 
 #if ENABLE_LLVM
-// #include "CodeGen/LLVMCodeGenerator.hpp"  // Temporarily disabled
+#include "CodeGen/LLVMCodeGenerator.hpp"
 // #include <llvm/Support/raw_ostream.h>
 // #include <llvm/IR/Verifier.h>
 #endif
@@ -35,16 +35,19 @@ enum CompilationMode {
 int main(int argc, char *argv[])
 {
     bool debugMode = false;
+    bool showIR = false;
     const char* filename = nullptr;
     const char* outputFile = nullptr;
     CompilationMode mode = MODE_INTERPRET;
-    
-    // Parse arguments
+      // Parse arguments
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--debug") == 0) {
             debugMode = true;
         } else if (strcmp(argv[i], "--semantic") == 0) {
-            mode = MODE_SEMANTIC;        } else if (strcmp(argv[i], "--llvm") == 0) {
+            mode = MODE_SEMANTIC;
+        } else if (strcmp(argv[i], "--show-ir") == 0) {
+            showIR = true;
+        } else if (strcmp(argv[i], "--llvm") == 0) {
 #if ENABLE_LLVM
             mode = MODE_LLVM;
 #else
@@ -60,11 +63,11 @@ int main(int argc, char *argv[])
     
     if (filename == nullptr)
     {
-        std::cerr << "Uso: " << argv[0] << " [opciones] <archivo.hulk>" << std::endl;
-        std::cerr << "Opciones:" << std::endl;
+        std::cerr << "Uso: " << argv[0] << " [opciones] <archivo.hulk>" << std::endl;        std::cerr << "Opciones:" << std::endl;
         std::cerr << "  --debug     Activar modo de depuración" << std::endl;
         std::cerr << "  --semantic  Solo análisis semántico" << std::endl;
         std::cerr << "  --llvm      Generar código LLVM IR" << std::endl;
+        std::cerr << "  --show-ir   Mostrar código LLVM IR generado" << std::endl;
         std::cerr << "  -o <file>   Archivo de salida (solo para --llvm)" << std::endl;
         return 1;
     }
@@ -137,14 +140,37 @@ int main(int argc, char *argv[])
             std::cout << "Análisis semántico completado exitosamente.\n";
             fclose(file);
             return 0;
-        }
-    }// 3) LLVM code generation - DISABLED FOR NOW
+        }    }    // 3) LLVM code generation
 #if ENABLE_LLVM
-    if (mode == MODE_LLVM) {
-        std::cout << "LLVM code generation temporarily disabled.\n";
-        std::cout << "Please use interpretation or semantic analysis modes.\n";
-        fclose(file);
-        return 0;
+    if (mode == MODE_LLVM || showIR) {
+        if (debugMode) std::cout << "=== Iniciando generación de código LLVM ===\n";
+        
+        try {
+            LLVMCodeGenerator codegen("hulk_module");
+            rootAST->accept(&codegen);
+            
+            if (mode == MODE_LLVM || showIR) {
+                std::cout << "\n=== Código LLVM IR Generado ===\n";
+                codegen.printModule();
+                std::cout << "=== Fin del código LLVM IR ===\n\n";
+            }
+            
+            if (debugMode) std::cout << "=== Generación de código LLVM completada ===\n";
+            
+            // Si solo queremos mostrar IR, continuamos con la ejecución normal
+            if (mode == MODE_LLVM) {
+                fclose(file);
+                return 0;
+            }
+        }
+        catch (const std::exception &e) {
+            std::cerr << "Error en generación de código LLVM: " << e.what() << "\n";
+            if (mode == MODE_LLVM) {
+                fclose(file);
+                return 4;
+            }
+            // Si es solo --show-ir, continuamos con la ejecución
+        }
     }
 #endif
 

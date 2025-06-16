@@ -1,0 +1,178 @@
+// HULK Advanced Features Demo
+// Este script demuestra las capacidades avanzadas del compilador HULK
+// Ideal para probar con las opciones --llvm, --debug y --show-ir
+
+// ==================== HERENCIA MÚLTIPLE ====================
+
+type Shape {
+    id = 0;
+    color = "white";
+    
+    init(id, color) {
+        self.id := id;
+        self.color := color;
+    }
+    
+    describe() => "Shape #" @ str(self.id) @ " (" @ self.color @ ")";
+    area() => 0.0;
+}
+
+type Rectangle inherits Shape {
+    width = 1.0;
+    height = 1.0;
+    
+    init(id, color, width, height) {
+        base.init(id, color);
+        self.width := width;
+        self.height := height;
+    }
+    
+    area() => self.width * self.height;
+    perimeter() => 2.0 * (self.width + self.height);
+    describe() => base.describe() @ " Rectangle " @ str(self.width) @ "x" @ str(self.height);
+}
+
+type Square inherits Rectangle {
+    init(id, color, side) {
+        base.init(id, color, side, side);
+    }
+    
+    getSide() => self.width;
+    describe() => base.describe() @ " (Square)";
+}
+
+// ==================== OPERACIONES MATEMÁTICAS AVANZADAS ====================
+
+type Calculator {
+    precision = 2;
+    
+    init(precision) {
+        self.precision := precision;
+    }
+    
+    // Funciones matemáticas built-in
+    circleArea(radius) => PI * pow(radius, 2);
+    sphereVolume(radius) => (4.0 / 3.0) * PI * pow(radius, 3);
+    
+    // Trigonometría
+    triangle_area(a, b, angle) => 0.5 * a * b * sin(angle);
+    
+    // Exponencial y logaritmos
+    exponential(x) => pow(E, x);
+    quadratic(a, b, c, x) => a * pow(x, 2) + b * x + c;
+    
+    format(number) => {
+        let factor = pow(10, self.precision) in
+        str(number * factor / factor)
+    };
+}
+
+// ==================== MANIPULACIÓN AVANZADA DE STRINGS ====================
+
+type TextProcessor {
+    prefix = "";
+    suffix = "";
+    
+    init(prefix, suffix) {
+        self.prefix := prefix;
+        self.suffix := suffix;
+    }
+    
+    wrap(text) => self.prefix @ text @ self.suffix;
+    repeat(text, times) => {
+        let result = "" in {
+            let i = 0 in
+            while (i < times) {
+                result := result @ text;
+                i := i + 1;
+            };
+            result
+        }
+    };
+    
+    format_number(num) => "[" @ str(num) @ "]";
+}
+
+// ==================== MAIN PROGRAM ====================
+
+{
+    print("🚀 HULK ADVANCED FEATURES DEMONSTRATION");
+    print("======================================");
+    print("");
+    
+    // Test herencia múltiple con diferentes niveles
+    print("📐 GEOMETRY HIERARCHY TEST:");
+    
+    let shape = new Shape(1, "red") in {
+        print("- " @ shape.describe());
+        print("  Area: " @ str(shape.area()));
+    };
+    
+    let rect = new Rectangle(2, "blue", 5.0, 3.0) in {
+        print("- " @ rect.describe());
+        print("  Area: " @ str(rect.area()));
+        print("  Perimeter: " @ str(rect.perimeter()));
+    };
+    
+    let square = new Square(3, "green", 4.0) in {
+        print("- " @ square.describe());
+        print("  Area: " @ str(square.area()));
+        print("  Side: " @ str(square.getSide()));
+    };
+    
+    print("");
+    
+    // Test operaciones matemáticas avanzadas
+    print("🧮 MATHEMATICAL OPERATIONS TEST:");
+    
+    let calc = new Calculator(3) in {
+        let radius = 5.0 in {
+            print("- Circle area (r=" @ str(radius) @ "): " @ calc.format(calc.circleArea(radius)));
+            print("- Sphere volume (r=" @ str(radius) @ "): " @ calc.format(calc.sphereVolume(radius)));
+        };
+        
+        let angle = PI / 4.0 in {
+            print("- Triangle area (5, 3, π/4): " @ calc.format(calc.triangle_area(5.0, 3.0, angle)));
+        };
+        
+        print("- e^2: " @ calc.format(calc.exponential(2.0)));
+        print("- Quadratic (1, 2, 1, x=3): " @ calc.format(calc.quadratic(1.0, 2.0, 1.0, 3.0)));
+    };
+    
+    print("");
+    
+    // Test manipulación de strings
+    print("📝 STRING PROCESSING TEST:");
+    
+    let processor = new TextProcessor("<<", ">>") in {
+        print("- Wrapped text: " @ processor.wrap("HULK"));
+        print("- Repeated pattern: " @ processor.repeat("ABC", 3));
+        print("- Formatted number: " @ processor.format_number(42));
+    };
+    
+    print("");
+    
+    // Test combinaciones complejas
+    print("🔬 COMPLEX INTEGRATION TEST:");
+    
+    let complex_calc = new Calculator(4) in {
+        let shapes = [
+            new Square(101, "purple", sqrt(16.0)),
+            new Rectangle(102, "orange", PI, E)
+        ] in {
+            let total_area = 0.0 in {
+                // Simulación de iteración (ya que no tenemos for loops nativos)
+                total_area := shapes[0].area() + shapes[1].area();
+                print("- Total area of complex shapes: " @ complex_calc.format(total_area));
+                print("- Using constants PI=" @ str(PI) @ ", E=" @ str(E));
+            }
+        }
+    };
+    
+    print("");
+    print("✅ All advanced features tested successfully!");
+    print("💡 Try running with:");
+    print("   --llvm    (for optimized LLVM IR generation)");
+    print("   --debug   (for detailed compilation info)");
+    print("   --show-ir (to see generated LLVM IR code)");
+}

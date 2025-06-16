@@ -1,0 +1,3 @@
+// Test simple sin funciones definidas por usuario
+let result = 2 + 3 in
+result;

@@ -1,0 +1,10 @@
+// Test simple de la función str
+let numero = 42 in
+let texto = str(numero) in
+print("El número " @ texto @ " convertido a string");
+
+let decimal = 3.14159 in
+print("Pi = " @ str(decimal));
+
+let verdadero = true in
+print("Boolean: " @ str(verdadero));

@@ -1,0 +1,13 @@
+type Person {
+    name = "Unknown";
+    
+    init(n) {
+        self.name := n;
+    }
+    
+    greet() => "Hello, I'm " @ self.name;
+};
+
+let person = new Person("Alice") in {
+    print(person.greet());
+};

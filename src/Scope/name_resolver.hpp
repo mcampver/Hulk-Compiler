@@ -9,15 +9,14 @@ class NameResolver : public StmtVisitor, public ExprVisitor
     using SymScope = Scope<SymbolInfo>;
     SymScope::Ptr currentScope_;
 
-public:
-    NameResolver()
+public:    NameResolver()
         : currentScope_(std::make_shared<SymScope>(nullptr)) // scope global
     {        // Pre-declarar las funciones nativas:
         for (auto &fn : {
-                 "print", "sqrt", "log", "sin", "cos",
+                 "print", "sqrt", "log", "sin", "cos", "pow",
                  "rand", "range", "iter", "next", "current",
                  "PI", "E", "function", "if", "else",
-                 "debug", "type", "assert"})
+                 "debug", "type", "assert", "str"})
         {
             currentScope_->declare(fn, SymbolInfo{SymbolInfo::FUNCTION});
         }

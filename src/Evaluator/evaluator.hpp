@@ -414,6 +414,13 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
             lastValue = Value(std::cos(args[0].asNumber()));
             return;
         }
+        else if (e->callee == "pow")
+        {
+            if (args.size() != 2)
+                throw std::runtime_error("pow() espera 2 argumentos");
+            lastValue = Value(std::pow(args[0].asNumber(), args[1].asNumber()));
+            return;
+        }
         else if (e->callee == "rand")
         {
             lastValue = Value(static_cast<double>(rand()) / RAND_MAX);
@@ -874,8 +881,7 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
             const auto& method = parentTypeDecl->methods[i];
             const std::string& methodName = method.first;
-            
-            if (methodName == "name") { // Asumimos que estamos en el método name()
+              if (methodName == "name") { // Asumimos que estamos en el método name()
                 if (i < parentTypeDecl->methodBodies.size() && parentTypeDecl->methodBodies[i]) {
                     // Ejecutar el método padre
                     parentTypeDecl->methodBodies[i]->accept(this);
@@ -934,39 +940,54 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
                 arg->accept(this);
                 args.push_back(lastValue);
             }
-            
-            // Buscar el método en el tipo padre
-            for (size_t i = 0; i < parentTypeDecl->methods.size(); ++i) {
-                const auto& method = parentTypeDecl->methods[i];
-                const std::string& methodName = method.first;
-                const std::vector<std::string>& params = method.second;
-                
-                if (methodName == expr->method && params.size() == args.size()) {
-                    // Encontramos el método con el número correcto de parámetros
-                    if (i < parentTypeDecl->methodBodies.size() && parentTypeDecl->methodBodies[i]) {
-                        // Mantener el contexto de self actual (no cambiar currentSelf)
-                        auto oldSelf = currentSelf;
-                        
-                        // Crear nuevo frame para parámetros del método
-                        auto oldEnv = env;
-                        env = std::make_shared<EnvFrame>(oldEnv);
-                        
-                        // Asignar parámetros
-                        for (size_t j = 0; j < params.size(); ++j) {
-                            env->locals[params[j]] = args[j];
+              // Buscar el método en toda la cadena de herencia, empezando por el tipo padre
+            TypeDecl* searchTypeDecl = parentTypeDecl;
+            while (searchTypeDecl) {
+                // Buscar el método en el tipo actual
+                for (size_t i = 0; i < searchTypeDecl->methods.size(); ++i) {
+                    const auto& method = searchTypeDecl->methods[i];
+                    const std::string& methodName = method.first;
+                    const std::vector<std::string>& params = method.second;
+                    
+                    if (methodName == expr->method && params.size() == args.size()) {
+                        // Encontramos el método con el número correcto de parámetros
+                        if (i < searchTypeDecl->methodBodies.size() && searchTypeDecl->methodBodies[i]) {
+                            // Mantener el contexto de self actual (no cambiar currentSelf)
+                            auto oldSelf = currentSelf;
+                            
+                            // Crear nuevo frame para parámetros del método
+                            auto oldEnv = env;
+                            env = std::make_shared<EnvFrame>(oldEnv);
+                            
+                            // Asignar parámetros
+                            for (size_t j = 0; j < params.size(); ++j) {
+                                env->locals[params[j]] = args[j];
+                            }
+                            
+                            // Ejecutar cuerpo del método padre
+                            searchTypeDecl->methodBodies[i]->accept(this);
+                            Value result = lastValue;
+                            
+                            // Restaurar contexto
+                            env = std::move(oldEnv);
+                            currentSelf = oldSelf;
+                            
+                            lastValue = result;
+                            return;
                         }
-                        
-                        // Ejecutar cuerpo del método padre
-                        parentTypeDecl->methodBodies[i]->accept(this);
-                        Value result = lastValue;
-                        
-                        // Restaurar contexto
-                        env = std::move(oldEnv);
-                        currentSelf = oldSelf;
-                        
-                        lastValue = result;
-                        return;
                     }
+                }
+                
+                // Si no se encuentra en este tipo, continuar con el tipo padre
+                if (!searchTypeDecl->parentType.empty()) {
+                    auto parentIt = types.find(searchTypeDecl->parentType);
+                    if (parentIt != types.end()) {
+                        searchTypeDecl = parentIt->second;
+                    } else {
+                        break; // No se pudo encontrar el tipo padre
+                    }
+                } else {
+                    break; // No hay más tipos padre
                 }
             }
             
@@ -994,40 +1015,55 @@ struct EvaluatorVisitor : StmtVisitor, ExprVisitor
         TypeDecl* typeDecl = obj->typeDeclaration;
         if (!typeDecl) {
             throw std::runtime_error("Objeto sin declaración de tipo válida");
-        }
-          // Buscar el método en la declaración del tipo
-        for (size_t i = 0; i < typeDecl->methods.size(); ++i) {
-            const auto& method = typeDecl->methods[i];
-            const std::string& methodName = method.first;
-            const std::vector<std::string>& params = method.second;
-            
-            if (methodName == expr->method && params.size() == args.size()) {
-                // Encontramos el método con el número correcto de parámetros
-                if (i < typeDecl->methodBodies.size() && typeDecl->methodBodies[i]) {
-                    // Establecer contexto de self
-                    auto oldSelf = currentSelf;
-                    currentSelf = obj;
-                    
-                    // Crear nuevo frame para parámetros del método
-                    auto oldEnv = env;
-                    env = std::make_shared<EnvFrame>(oldEnv);
-                    
-                    // Asignar parámetros
-                    for (size_t j = 0; j < params.size(); ++j) {
-                        env->locals[params[j]] = args[j];
+        }          // Buscar el método en toda la cadena de herencia
+        TypeDecl* searchTypeDecl = typeDecl;
+        while (searchTypeDecl) {
+            // Buscar el método en el tipo actual
+            for (size_t i = 0; i < searchTypeDecl->methods.size(); ++i) {
+                const auto& method = searchTypeDecl->methods[i];
+                const std::string& methodName = method.first;
+                const std::vector<std::string>& params = method.second;
+                
+                if (methodName == expr->method && params.size() == args.size()) {
+                    // Encontramos el método con el número correcto de parámetros
+                    if (i < searchTypeDecl->methodBodies.size() && searchTypeDecl->methodBodies[i]) {
+                        // Establecer contexto de self
+                        auto oldSelf = currentSelf;
+                        currentSelf = obj;
+                        
+                        // Crear nuevo frame para parámetros del método
+                        auto oldEnv = env;
+                        env = std::make_shared<EnvFrame>(oldEnv);
+                        
+                        // Asignar parámetros
+                        for (size_t j = 0; j < params.size(); ++j) {
+                            env->locals[params[j]] = args[j];
+                        }
+                        
+                        // Ejecutar cuerpo del método
+                        searchTypeDecl->methodBodies[i]->accept(this);
+                        Value result = lastValue;
+                        
+                        // Restaurar contexto
+                        env = std::move(oldEnv);
+                        currentSelf = oldSelf;
+                        
+                        lastValue = result;
+                        return;
                     }
-                    
-                    // Ejecutar cuerpo del método
-                    typeDecl->methodBodies[i]->accept(this);
-                    Value result = lastValue;
-                    
-                    // Restaurar contexto
-                    env = std::move(oldEnv);
-                    currentSelf = oldSelf;
-                    
-                    lastValue = result;
-                    return;
                 }
+            }
+            
+            // Si no se encuentra en este tipo, continuar con el tipo padre
+            if (!searchTypeDecl->parentType.empty()) {
+                auto parentIt = types.find(searchTypeDecl->parentType);
+                if (parentIt != types.end()) {
+                    searchTypeDecl = parentIt->second;
+                } else {
+                    break; // No se pudo encontrar el tipo padre
+                }
+            } else {
+                break; // No hay más tipos padre
             }
         }
         

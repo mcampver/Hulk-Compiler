@@ -1,5 +1,23 @@
 {
+    "terminal.integrated.profiles.windows": {
+        "MSYS2 MinGW64": {
+            "path": "C:/msys64/usr/bin/bash.exe",
+            "args": ["-li"],
+            "env": {
+                "MSYSTEM": "MINGW64",
+                "PATH": "/mingw64/bin:/usr/bin:/bin:${env:PATH}"
+            }
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "MSYS2 MinGW64",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
+    "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/clang++.exe",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.intelliSenseMode": "clang-x64",
     "files.associations": {
+        "*.hulk": "plaintext",
+        "*.y": "yacc",
+        "*.l": "lex",
         "compare": "cpp",
         "memory": "cpp",
         "tuple": "cpp",
@@ -15,6 +33,14 @@
         "ios": "cpp",
         "cmath": "cpp",
         "random": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "regex": "cpp"
+    },
+    "editor.rulers": [80, 120],
+    "files.exclude": {
+        "**/*.o": true,
+        "**/lex.yy.cpp": true,
+        "**/parser.tab.cpp": true,
+        "**/parser.tab.hpp": true
     }
 }

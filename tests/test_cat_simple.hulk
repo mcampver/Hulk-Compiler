@@ -1,0 +1,3 @@
+type Cat inherits Animal {
+    speak() => self.name @ " meows: Meow!";
+};
