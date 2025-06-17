@@ -1,15 +1,16 @@
 #include "SemanticAnalyzer.hpp"
 #include <algorithm>
 #include <sstream>
+#include <set>
 
 void SemanticAnalyzer::registerBuiltinFunctions() {
-    // Register built-in functions with their signatures
-    // Math functions
+    // Register built-in functions with their signatures    // Math functions
     symbol_table_.declareFunction("sqrt", {"x"});
     symbol_table_.declareFunction("sin", {"x"});
     symbol_table_.declareFunction("cos", {"x"});
     symbol_table_.declareFunction("exp", {"x"});
     symbol_table_.declareFunction("log", {"x"});
+    symbol_table_.declareFunction("pow", {"base", "exponent"});  // Agregar pow
     symbol_table_.declareFunction("rand", {});
     symbol_table_.declareFunction("floor", {"x"});
     symbol_table_.declareFunction("ceil", {"x"});
@@ -20,6 +21,7 @@ void SemanticAnalyzer::registerBuiltinFunctions() {
     
     // String functions
     symbol_table_.declareFunction("parse", {"s"});
+    symbol_table_.declareFunction("str", {"x"});  // Agregar str para conversión
 }
 
 void SemanticAnalyzer::collectFunctions(Program* program) {
@@ -133,7 +135,9 @@ void SemanticAnalyzer::visit(BinaryExpr* expr) {
         case BinaryExpr::OP_DIV:
         case BinaryExpr::OP_POW:
         case BinaryExpr::OP_MOD:        case BinaryExpr::OP_ENHANCED_MOD:
-            if (left_type.getKind() != TypeInfo::Kind::Number || right_type.getKind() != TypeInfo::Kind::Number) {
+            // Allow operations with unknown types (assume they're numbers in mathematical context)
+            if ((left_type.getKind() != TypeInfo::Kind::Number && left_type.getKind() != TypeInfo::Kind::Unknown) ||
+                (right_type.getKind() != TypeInfo::Kind::Number && right_type.getKind() != TypeInfo::Kind::Unknown)) {
                 reportError(ErrorType::TYPE_MISMATCH,
                     "El operador '" + op_str + "' requiere operandos numéricos, se encontró " +
                     left_type.toString() + " y " + right_type.toString(), 
@@ -143,11 +147,11 @@ void SemanticAnalyzer::visit(BinaryExpr* expr) {
             }
             current_type_ = TypeInfo(TypeInfo::Kind::Number);
             break;
-            
-        case BinaryExpr::OP_CONCAT:        case BinaryExpr::OP_CONCAT_SPACE:
-            if (left_type.getKind() != TypeInfo::Kind::String || right_type.getKind() != TypeInfo::Kind::String) {
+              case BinaryExpr::OP_CONCAT:        case BinaryExpr::OP_CONCAT_SPACE:
+            // En HULK, la concatenación puede manejar string + cualquier tipo (conversión automática)
+            if (left_type.getKind() != TypeInfo::Kind::String && right_type.getKind() != TypeInfo::Kind::String) {
                 reportError(ErrorType::TYPE_MISMATCH,
-                    "El operador de concatenación '" + op_str + "' requiere operandos de cadena, se encontró " +
+                    "El operador de concatenación '" + op_str + "' requiere al menos un operando de cadena, se encontró " +
                     left_type.toString() + " y " + right_type.toString(),
                     expr, "expresión binaria concatenación");
                 current_type_ = TypeInfo(TypeInfo::Kind::Unknown);
@@ -227,9 +231,19 @@ void SemanticAnalyzer::visit(CallExpr* expr) {
         // Could add more specific type checking here
     }
     
-    // For simplicity, assume all functions return numbers
-    // In a more complete implementation, we'd track return types
-    current_type_ = TypeInfo(TypeInfo::Kind::Number);
+    // For mathematical functions, assume they return numbers
+    // This is a simplification for recursive mathematical functions
+    if (expr->callee == "fact" || expr->callee == "fib" || 
+        expr->callee == "sum" || expr->callee == "power" ||
+        expr->callee == "sqrt" || expr->callee == "sin" || expr->callee == "cos" ||
+        expr->callee == "exp" || expr->callee == "log" || expr->callee == "pow") {
+        current_type_ = TypeInfo(TypeInfo::Kind::Number);
+    } else if (expr->callee == "print" || expr->callee == "println") {
+        current_type_ = TypeInfo(TypeInfo::Kind::Unknown); // print doesn't return meaningful value
+    } else {
+        // For user-defined functions, assume they return numbers for now
+        current_type_ = TypeInfo(TypeInfo::Kind::Number);
+    }
 }
 
 void SemanticAnalyzer::visit(VariableExpr* expr) {
@@ -297,8 +311,8 @@ void SemanticAnalyzer::visit(AssignExpr* expr) {
 void SemanticAnalyzer::visit(IfExpr* expr) {
     // Analyze condition
     expr->condition->accept(this);
-    TypeInfo cond_type = current_type_;
-      if (cond_type.getKind() != TypeInfo::Kind::Boolean) {
+    TypeInfo cond_type = current_type_;    // Be more lenient with condition types - comparisons should result in boolean
+    if (cond_type.getKind() != TypeInfo::Kind::Boolean && cond_type.getKind() != TypeInfo::Kind::Unknown) {
         reportError(ErrorType::TYPE_MISMATCH,
             "La condición del 'if' debe ser booleana, se encontró " + cond_type.toString(),
             expr, "expresión if");
@@ -451,15 +465,23 @@ void SemanticAnalyzer::visit(ExprStmt* stmt) {
 
 void SemanticAnalyzer::visit(FunctionDecl* stmt) {
     symbol_table_.enterScope();
-    
-    // Declare parameters as variables
+      // Add parameters to current scope with inferred types
+    // For recursive functions, assume numeric types for mathematical operations
     for (const auto& param : stmt->params) {
+        // Check if parameter name is a reserved word
+        if (isReservedWord(param)) {
+            reportError(ErrorType::INVALID_OPERATION,
+                "No se puede usar la palabra reservada '" + param + "' como nombre de parámetro",
+                stmt, "declaración de función '" + stmt->name + "'");
+        }
+        
         if (symbol_table_.isVariableDeclared(param)) {
             reportError(ErrorType::REDEFINED_VARIABLE,
                 "Parámetro '" + param + "' está duplicado",
                 stmt, "declaración de función");
         } else {
-            symbol_table_.declareVariable(param, TypeInfo(TypeInfo::Kind::Unknown));
+            // Assume numeric types for mathematical functions
+            symbol_table_.declareVariable(param, TypeInfo(TypeInfo::Kind::Number));
         }
     }
     
@@ -520,4 +542,13 @@ bool SemanticAnalyzer::areTypesCompatible(const TypeInfo& type1, const TypeInfo&
     }
     
     return false;
+}
+
+bool SemanticAnalyzer::isReservedWord(const std::string& word) {
+    static const std::set<std::string> reserved_words = {
+        "base", "self", "new", "type", "if", "else", "while", "for", "in",
+        "function", "let", "true", "false", "null", "is", "inherits",
+        "protocol", "extends", "class", "method", "attribute"
+    };
+    return reserved_words.find(word) != reserved_words.end();
 }

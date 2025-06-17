@@ -127,4 +127,9 @@ private:
      * @brief Check if two types are compatible
      */
     bool areTypesCompatible(const TypeInfo& type1, const TypeInfo& type2);
+    
+    /**
+     * @brief Check if a word is reserved in HULK language
+     */
+    bool isReservedWord(const std::string& word);
 };

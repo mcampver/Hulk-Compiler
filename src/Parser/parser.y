@@ -509,6 +509,41 @@ type_attr:
 %%
 
 void yyerror(const char* s) {
-    std::cerr << "Error de Sintaxis en línea " << yylineno << ": " << s << std::endl;
-    std::cerr << "Fuente del error: Parser" << std::endl;
+    std::string error_msg = s;
+    std::cerr << "Error de Sintaxis en línea " << yylineno << ": ";
+    
+    // Proporcionar mensajes más descriptivos para errores comunes
+    if (error_msg == "syntax error") {
+        std::cerr << "Error de sintaxis";
+        
+        // Sugerir posibles causas comunes
+        std::cerr << std::endl << "Posibles causas:" << std::endl;
+        std::cerr << "  - Uso de palabra reservada como identificador (ej: 'base', 'self', 'type')" << std::endl;
+        std::cerr << "  - Falta punto y coma (;) al final de la declaración" << std::endl;
+        std::cerr << "  - Sintaxis incorrecta en función (usar '=>' para funciones)" << std::endl;
+        std::cerr << "  - Sintaxis incorrecta en expresión 'let' (usar 'let var = expr in body')" << std::endl;
+    } else {
+        std::cerr << error_msg;
+    }
+    
+    std::cerr << std::endl << "Fuente del error: Parser" << std::endl;
 }
+
+/*
+ * PALABRAS RESERVADAS DE HULK:
+ * - base: Referencia a la clase padre en herencia
+ * - self: Referencia a la instancia actual
+ * - type: Declaración de tipos
+ * - function: Declaración de funciones
+ * - let: Declaración de variables locales
+ * - in: Usado con 'let'
+ * - if, else: Condicionales
+ * - while: Bucles
+ * - for: Bucles (sintaxis especial)
+ * - new: Creación de instancias
+ * - inherits: Herencia de tipos
+ * - protocol: Declaración de protocolos
+ * - extends: Extensión de protocolos
+ * - true, false: Valores booleanos
+ * - null: Valor nulo
+ */
