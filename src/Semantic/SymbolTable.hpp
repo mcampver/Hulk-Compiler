@@ -38,9 +38,9 @@ struct FunctionSymbol {
  * @brief Symbol table for managing variable and function scopes
  */
 class SymbolTable {
-private:
-    std::vector<std::map<std::string, Symbol>> variable_scopes_;
+private:    std::vector<std::map<std::string, Symbol>> variable_scopes_;
     std::map<std::string, std::shared_ptr<FunctionSymbol>> functions_;
+    std::map<std::string, bool> declared_types_;  // Track declared types
     
 public:
     SymbolTable() {
@@ -65,6 +65,20 @@ public:
         if (!variable_scopes_.empty()) {
             variable_scopes_.pop_back();
         }
+    }
+    
+    /**
+     * @brief Enter a new scope (alias for pushScope for compatibility)
+     */
+    void enterScope() {
+        pushScope();
+    }
+    
+    /**
+     * @brief Exit current scope (alias for popScope for compatibility)
+     */
+    void exitScope() {
+        popScope();
     }
     
     /**
@@ -134,6 +148,77 @@ public:
         return current_scope.find(name) != current_scope.end();
     }
     
+    /**
+     * @brief Check if variable is declared (compatibility method)
+     */
+    bool isVariableDeclared(const std::string& name) const {
+        for (auto it = variable_scopes_.rbegin(); it != variable_scopes_.rend(); ++it) {
+            if (it->find(name) != it->end()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * @brief Get variable type (compatibility method)  
+     */
+    TypeInfo getVariableType(const std::string& name) const {
+        for (auto it = variable_scopes_.rbegin(); it != variable_scopes_.rend(); ++it) {
+            auto found = it->find(name);
+            if (found != it->end()) {
+                return found->second.type;
+            }
+        }
+        return TypeInfo(TypeInfo::Kind::Unknown);
+    }
+    
+    /**
+     * @brief Check if function is declared
+     */
+    bool isFunctionDeclared(const std::string& name) const {
+        return functions_.find(name) != functions_.end();
+    }
+    
+    /**
+     * @brief Get function parameters (simplified for compatibility)
+     */
+    std::vector<std::string> getFunctionParams(const std::string& name) const {
+        auto found = functions_.find(name);
+        if (found != functions_.end()) {
+            std::vector<std::string> params;
+            for (size_t i = 0; i < found->second->parameter_types.size(); ++i) {
+                params.push_back("param" + std::to_string(i));
+            }
+            return params;
+        }
+        return {};
+    }
+    
+    /**
+     * @brief Declare a function with parameter names (compatibility method)
+     */    void declareFunction(const std::string& name, const std::vector<std::string>& param_names) {
+        std::vector<TypeInfo> param_types;
+        for (size_t i = 0; i < param_names.size(); ++i) {
+            param_types.push_back(TypeInfo(TypeInfo::Kind::Unknown));
+        }
+        declareFunction(name, param_types, TypeInfo(TypeInfo::Kind::Unknown), 0);
+    }
+    
+    /**
+     * @brief Declare a type
+     */
+    void declareType(const std::string& name) {
+        declared_types_[name] = true;
+    }
+    
+    /**
+     * @brief Check if type is declared
+     */
+    bool isTypeDeclared(const std::string& name) const {
+        return declared_types_.find(name) != declared_types_.end();
+    }
+
 private:
     /**
      * @brief Add built-in functions to symbol table

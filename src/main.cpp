@@ -90,11 +90,10 @@ int main(int argc, char *argv[])
     }
 
     yylineno = 1;
-    yyin = file;
-
-    if (yyparse() != 0 || rootAST == nullptr)
+    yyin = file;    if (yyparse() != 0 || rootAST == nullptr)
     {
-        std::cerr << "Error al parsear.\n";
+        std::cerr << "Error al parsear el archivo." << std::endl;
+        std::cerr << "Fuente del error: Parser" << std::endl;
         fclose(file);
         return 1;
     }
@@ -106,32 +105,30 @@ int main(int argc, char *argv[])
         NameResolver resolver;
         rootAST->accept(&resolver);
         if (debugMode) std::cout << "=== Resolución de nombres OK ===\n";
-    }
-    catch (const std::exception &e)
+    }    catch (const std::exception &e)
     {
-        std::cerr << "Error en resolución de nombres: " << e.what() << "\n";
+        std::cerr << "Error en resolución de nombres en línea " << yylineno << ": " << e.what() << std::endl;
+        std::cerr << "Fuente del error: NameResolver" << std::endl;
         fclose(file);
         return 2;
-    }    // 2) Enhanced semantic analysis (for semantic and LLVM modes)
+    }// 2) Enhanced semantic analysis (for semantic and LLVM modes)
     if (mode == MODE_SEMANTIC || mode == MODE_LLVM) {
         if (debugMode) std::cout << "=== Iniciando análisis semántico avanzado ===\n";
         
         try {
             SemanticAnalyzer analyzer;
-            analyzer.analyze(rootAST);
-              if (analyzer.hasErrors()) {
-                std::cerr << "Errores semánticos encontrados:\n";
-                for (const auto& error : analyzer.getErrors()) {
-                    std::cerr << "Línea " << error.line << ": " << error.message << "\n";
-                }
+            analyzer.analyze(rootAST);            if (analyzer.hasErrors()) {
+                std::cerr << "\n=== ERRORES SEMÁNTICOS ENCONTRADOS ===" << std::endl;
+                analyzer.printErrors();
+                std::cerr << "\nNo se puede continuar la compilación debido a errores semánticos." << std::endl;
                 fclose(file);
                 return 2;
             }
             
             if (debugMode) std::cout << "=== Análisis semántico completado exitosamente ===\n";
-        }
-        catch (const std::exception& e) {
-            std::cerr << "Error durante análisis semántico: " << e.what() << "\n";
+        }        catch (const std::exception& e) {
+            std::cerr << "Error crítico durante análisis semántico: " << e.what() << std::endl;
+            std::cerr << "Fuente del error: SemanticAnalyzer" << std::endl;
             fclose(file);
             return 2;
         }
@@ -162,9 +159,10 @@ int main(int argc, char *argv[])
                 fclose(file);
                 return 0;
             }
-        }
-        catch (const std::exception &e) {
-            std::cerr << "Error en generación de código LLVM: " << e.what() << "\n";
+        }        catch (const std::exception &e)
+        {
+            std::cerr << "Error en generación de código LLVM: " << e.what() << std::endl;
+            std::cerr << "Fuente del error: LLVMCodeGenerator" << std::endl;
             if (mode == MODE_LLVM) {
                 fclose(file);
                 return 4;
@@ -197,10 +195,10 @@ int main(int argc, char *argv[])
             if (debugMode) {
                 std::cout << "\n=== Programa terminado exitosamente ===\n";
             }
-        }
-        catch (const std::exception &e)
+        }        catch (const std::exception &e)
         {
-            std::cerr << "Error en ejecución: " << e.what() << "\n";
+            std::cerr << "Error en ejecución en línea " << yylineno << ": " << e.what() << std::endl;
+            std::cerr << "Fuente del error: EvaluatorVisitor" << std::endl;
             fclose(file);
             return 3;
         }

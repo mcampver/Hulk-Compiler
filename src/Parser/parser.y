@@ -167,7 +167,7 @@ expr:
           $$ = new ExprBlock(std::move(*$2));
           delete $2;
       }    | IDENT LPAREN argument_list RPAREN {
-          $$ = new CallExpr(std::string($1), std::move(*$3));
+          $$ = new CallExpr(std::string($1), std::move(*$3), yylineno);
           delete $3;
           free($1);
       }
@@ -188,7 +188,7 @@ expr:
           args.push_back(ExprPtr($5));
           $$ = new CallExpr("assert", std::move(args));
       }    | IDENT {
-          $$ = new VariableExpr(std::string($1));
+          $$ = new VariableExpr(std::string($1), yylineno);
           free($1);
       }
     
@@ -240,10 +240,8 @@ expr:
 
     | expr POW expr {
           $$ = new BinaryExpr(BinaryExpr::OP_POW, ExprPtr($1), ExprPtr($3));
-      }
-
-    | expr MULT expr {
-          $$ = new BinaryExpr(BinaryExpr::OP_MUL, ExprPtr($1), ExprPtr($3));
+      }    | expr MULT expr {
+          $$ = new BinaryExpr(BinaryExpr::OP_MUL, ExprPtr($1), ExprPtr($3), yylineno);
       }
 
     | expr DIV expr {
@@ -259,14 +257,10 @@ expr:
     | expr TRIPLE_PLUS expr %prec PLUS {
           $$ = new BinaryExpr(BinaryExpr::OP_TRIPLE_PLUS, ExprPtr($1), ExprPtr($3));
       }
-
-
     | expr PLUS expr {
-          $$ = new BinaryExpr(BinaryExpr::OP_ADD, ExprPtr($1), ExprPtr($3));
-      }
-
-    | expr MINUS expr {
-          $$ = new BinaryExpr(BinaryExpr::OP_SUB, ExprPtr($1), ExprPtr($3));
+          $$ = new BinaryExpr(BinaryExpr::OP_ADD, ExprPtr($1), ExprPtr($3), yylineno);
+      }    | expr MINUS expr {
+          $$ = new BinaryExpr(BinaryExpr::OP_SUB, ExprPtr($1), ExprPtr($3), yylineno);
       }
 
     | expr LESS_THAN expr {
@@ -515,5 +509,6 @@ type_attr:
 %%
 
 void yyerror(const char* s) {
-    std::cerr << "Parse error: " << s << " at line " << yylineno << std::endl;
+    std::cerr << "Error de Sintaxis en línea " << yylineno << ": " << s << std::endl;
+    std::cerr << "Fuente del error: Parser" << std::endl;
 }

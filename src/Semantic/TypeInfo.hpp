@@ -7,35 +7,36 @@
  * @brief Type information for HULK language types
  */
 class TypeInfo {
-public:
-    enum class Kind {
+public:    enum class Kind {
         Number,
         String, 
         Boolean,
         Function,
+        Object,
         Null,
         Unknown
     };
     
 private:
     Kind kind_;
+    std::string typeName_;  // For object types
     std::vector<TypeInfo> parameter_types_;
     std::unique_ptr<TypeInfo> return_type_;
     
 public:
-    explicit TypeInfo(Kind k = Kind::Unknown) : kind_(k) {}
-    
-    // Copy constructor
-    TypeInfo(const TypeInfo& other) : kind_(other.kind_), parameter_types_(other.parameter_types_) {
+    explicit TypeInfo(Kind k = Kind::Unknown, const std::string& name = "") 
+        : kind_(k), typeName_(name) {}
+      // Copy constructor
+    TypeInfo(const TypeInfo& other) : kind_(other.kind_), typeName_(other.typeName_), parameter_types_(other.parameter_types_) {
         if (other.return_type_) {
             return_type_ = std::make_unique<TypeInfo>(*other.return_type_);
         }
     }
-    
-    // Copy assignment operator
+      // Copy assignment operator
     TypeInfo& operator=(const TypeInfo& other) {
         if (this != &other) {
             kind_ = other.kind_;
+            typeName_ = other.typeName_;
             parameter_types_ = other.parameter_types_;
             if (other.return_type_) {
                 return_type_ = std::make_unique<TypeInfo>(*other.return_type_);
@@ -45,16 +46,15 @@ public:
         }
         return *this;
     }
-    
-    // Move constructor
+      // Move constructor
     TypeInfo(TypeInfo&& other) noexcept 
-        : kind_(other.kind_), parameter_types_(std::move(other.parameter_types_)), 
+        : kind_(other.kind_), typeName_(std::move(other.typeName_)), parameter_types_(std::move(other.parameter_types_)), 
           return_type_(std::move(other.return_type_)) {}
-    
-    // Move assignment operator
+      // Move assignment operator
     TypeInfo& operator=(TypeInfo&& other) noexcept {
         if (this != &other) {
             kind_ = other.kind_;
+            typeName_ = std::move(other.typeName_);
             parameter_types_ = std::move(other.parameter_types_);
             return_type_ = std::move(other.return_type_);
         }
@@ -64,13 +64,14 @@ public:
     // For function types
     TypeInfo(const std::vector<TypeInfo>& params, const TypeInfo& ret) 
         : kind_(Kind::Function), parameter_types_(params), return_type_(std::make_unique<TypeInfo>(ret)) {}
-    
-    Kind getKind() const { return kind_; }
+      Kind getKind() const { return kind_; }
+    const std::string& getTypeName() const { return typeName_; }
     
     bool isNumeric() const { return kind_ == Kind::Number; }
     bool isString() const { return kind_ == Kind::String; }
     bool isBoolean() const { return kind_ == Kind::Boolean; }
     bool isFunction() const { return kind_ == Kind::Function; }
+    bool isObject() const { return kind_ == Kind::Object; }
     bool isNull() const { return kind_ == Kind::Null; }
     bool isUnknown() const { return kind_ == Kind::Unknown; }
     
@@ -81,8 +82,10 @@ public:
         if (kind_ == Kind::Unknown || other.kind_ == Kind::Unknown) {
             return true; // Unknown types are compatible with everything
         }
-        
-        if (kind_ == other.kind_) {
+          if (kind_ == other.kind_) {
+            if (kind_ == Kind::Object) {
+                return typeName_ == other.typeName_;
+            }
             return true;
         }
         
@@ -96,13 +99,13 @@ public:
     
     /**
      * @brief Convert type to string representation
-     */
-    std::string toString() const {
+     */    std::string toString() const {
         switch (kind_) {
             case Kind::Number: return "Number";
             case Kind::String: return "String";
             case Kind::Boolean: return "Boolean";
             case Kind::Function: return "Function";
+            case Kind::Object: return typeName_.empty() ? "Object" : typeName_;
             case Kind::Null: return "Null";
             case Kind::Unknown: return "Unknown";
         }

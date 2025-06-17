@@ -47,7 +47,8 @@ struct ExprVisitor
     virtual void visit(AssignExpr *expr) = 0;
     virtual void visit(IfExpr *) = 0;
     virtual void visit(ExprBlock *) = 0;
-    virtual void visit(WhileExpr *) = 0;    virtual void visit(NewExpr *) = 0;
+    virtual void visit(WhileExpr *) = 0;
+    virtual void visit(NewExpr *) = 0;
     virtual void visit(MemberExpr *) = 0;
     virtual void visit(SelfExpr *) = 0;
     virtual void visit(BaseExpr *) = 0;
@@ -68,6 +69,10 @@ struct StmtVisitor
 // Base class for all expression nodes
 struct Expr
 {
+    int line_number = 0;  // Line number for error reporting
+    int column_number = 0; // Column number for error reporting
+    
+    Expr(int line = 0, int col = 0) : line_number(line), column_number(col) {}
     virtual void accept(ExprVisitor *v) = 0;
     virtual ~Expr() = default;
 };
@@ -77,6 +82,10 @@ using ExprPtr = std::unique_ptr<Expr>;
 // base class for all statement nodes.
 struct Stmt
 {
+    int line_number = 0;  // Line number for error reporting
+    int column_number = 0; // Column number for error reporting
+    
+    Stmt(int line = 0, int col = 0) : line_number(line), column_number(col) {}
     virtual void accept(StmtVisitor *) = 0;
     virtual ~Stmt() = default;
 };
@@ -98,7 +107,7 @@ struct Program : Stmt
 struct ExprStmt : Stmt
 {
     ExprPtr expr;
-    ExprStmt(ExprPtr e) : expr(std::move(e)) {}
+    ExprStmt(ExprPtr e, int line = 0, int col = 0) : Stmt(line, col), expr(std::move(e)) {}
     void
     accept(StmtVisitor *v) override
     {
@@ -110,7 +119,7 @@ struct ExprStmt : Stmt
 struct NumberExpr : Expr
 {
     double value;
-    NumberExpr(double v) : value(v) {}
+    NumberExpr(double v, int line = 0, int col = 0) : Expr(line, col), value(v) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -122,7 +131,7 @@ struct NumberExpr : Expr
 struct StringExpr : Expr
 {
     std::string value;
-    StringExpr(const std::string &s) : value(s) {}
+    StringExpr(const std::string &s, int line = 0, int col = 0) : Expr(line, col), value(s) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -134,7 +143,7 @@ struct StringExpr : Expr
 struct BooleanExpr : Expr
 {
     bool value;
-    BooleanExpr(bool v) : value(v) {}
+    BooleanExpr(bool v, int line = 0, int col = 0) : Expr(line, col), value(v) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -150,7 +159,7 @@ struct UnaryExpr : Expr
         OP_NOT
     } op;
     ExprPtr operand;
-    UnaryExpr(Op o, ExprPtr expr) : op(o), operand(std::move(expr)) {}
+    UnaryExpr(Op o, ExprPtr expr, int line = 0, int col = 0) : Expr(line, col), op(o), operand(std::move(expr)) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -184,7 +193,7 @@ struct BinaryExpr : Expr
     } op;
     ExprPtr left;
     ExprPtr right;
-    BinaryExpr(Op o, ExprPtr l, ExprPtr r) : op(o), left(std::move(l)), right(std::move(r)) {}
+    BinaryExpr(Op o, ExprPtr l, ExprPtr r, int line = 0, int col = 0) : Expr(line, col), op(o), left(std::move(l)), right(std::move(r)) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -197,8 +206,9 @@ struct CallExpr : Expr
 {
     std::string callee;
     std::vector<ExprPtr> args;
-    CallExpr(const std::string &name, std::vector<ExprPtr> &&arguments)
-        : callee(name), args(std::move(arguments))
+    
+    CallExpr(const std::string &name, std::vector<ExprPtr> &&arguments, int line = 0, int col = 0)
+        : Expr(line, col), callee(name), args(std::move(arguments))
     {
     }
     void
@@ -212,7 +222,7 @@ struct CallExpr : Expr
 struct VariableExpr : Expr
 {
     std::string name;
-    VariableExpr(const std::string &n) : name(n) {}
+    VariableExpr(const std::string &n, int line = 0, int col = 0) : Expr(line, col), name(n) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -226,8 +236,9 @@ struct LetExpr : Expr
     std::string name;    // nombre de la variable
     ExprPtr initializer; // expresión inicializadora
     StmtPtr body;        // cuerpo donde la variable está en alcance
-    LetExpr(const std::string &n, ExprPtr init, StmtPtr b)
-        : name(n), initializer(std::move(init)), body(std::move(b))
+    
+    LetExpr(const std::string &n, ExprPtr init, StmtPtr b, int line = 0, int col = 0)
+        : Expr(line, col), name(n), initializer(std::move(init)), body(std::move(b))
     {
     }
     void
@@ -243,7 +254,7 @@ struct AssignExpr : Expr
     std::string name;
     ExprPtr value;
 
-    AssignExpr(const std::string &n, ExprPtr v) : name(n), value(std::move(v)) {}
+    AssignExpr(const std::string &n, ExprPtr v, int line = 0, int col = 0) : Expr(line, col), name(n), value(std::move(v)) {}
 
     void
     accept(ExprVisitor *v) override
@@ -258,9 +269,9 @@ struct FunctionDecl : Stmt
     std::string name;
     std::vector<std::string> params;
     StmtPtr body;
-
-    FunctionDecl(const std::string &n, std::vector<std::string> &&p, StmtPtr b)
-        : name(n), params(std::move(p)), body(std::move(b))
+    
+    FunctionDecl(const std::string &n, std::vector<std::string> &&p, StmtPtr b, int line = 0, int col = 0)
+        : Stmt(line, col), name(n), params(std::move(p)), body(std::move(b))
     {
     }
 
@@ -277,9 +288,9 @@ struct IfExpr : Expr
     ExprPtr condition;
     ExprPtr thenBranch;
     ExprPtr elseBranch;
-
-    IfExpr(ExprPtr cond, ExprPtr thenB, ExprPtr elseB)
-        : condition(std::move(cond)), thenBranch(std::move(thenB)), elseBranch(std::move(elseB))
+    
+    IfExpr(ExprPtr cond, ExprPtr thenB, ExprPtr elseB, int line = 0, int col = 0)
+        : Expr(line, col), condition(std::move(cond)), thenBranch(std::move(thenB)), elseBranch(std::move(elseB))
     {
     }
 
@@ -294,7 +305,7 @@ struct IfExpr : Expr
 struct ExprBlock : Expr
 {
     std::vector<StmtPtr> stmts;
-    ExprBlock(std::vector<StmtPtr> &&s) : stmts(std::move(s)) {}
+    ExprBlock(std::vector<StmtPtr> &&s, int line = 0, int col = 0) : Expr(line, col), stmts(std::move(s)) {}
     void
     accept(ExprVisitor *v) override
     {
@@ -308,7 +319,7 @@ struct WhileExpr : Expr
     ExprPtr condition;
     ExprPtr body;
 
-    WhileExpr(ExprPtr cond, ExprPtr b) : condition(std::move(cond)), body(std::move(b)) {}
+    WhileExpr(ExprPtr cond, ExprPtr b, int line = 0, int col = 0) : Expr(line, col), condition(std::move(cond)), body(std::move(b)) {}
 
     void
     accept(ExprVisitor *v) override
@@ -328,7 +339,7 @@ struct TypeDecl : Stmt
     std::vector<std::pair<std::string, std::vector<std::string>>> methods;
     std::vector<ExprPtr> methodBodies;
 
-    TypeDecl(const std::string& n) : name(n) {}
+    TypeDecl(const std::string& n, int line = 0, int col = 0) : Stmt(line, col), name(n) {}
 
     // Helper to add a method with its body
     void addMethod(const std::string& name, const std::vector<std::string>& params, Expr* body) {
@@ -348,8 +359,8 @@ struct NewExpr : Expr
     std::string typeName;
     std::vector<ExprPtr> args;
 
-    NewExpr(const std::string& type, std::vector<ExprPtr>&& arguments) 
-        : typeName(type), args(std::move(arguments)) {}
+    NewExpr(const std::string& type, std::vector<ExprPtr>&& arguments, int line = 0, int col = 0) 
+        : Expr(line, col), typeName(type), args(std::move(arguments)) {}
 
     void accept(ExprVisitor *v) override
     {
@@ -363,8 +374,8 @@ struct MemberExpr : Expr
     ExprPtr object;
     std::string member;
 
-    MemberExpr(ExprPtr obj, const std::string& mem) 
-        : object(std::move(obj)), member(mem) {}
+    MemberExpr(ExprPtr obj, const std::string& mem, int line = 0, int col = 0) 
+        : Expr(line, col), object(std::move(obj)), member(mem) {}
 
     void accept(ExprVisitor *v) override
     {
@@ -375,6 +386,7 @@ struct MemberExpr : Expr
 // Self expression
 struct SelfExpr : Expr
 {
+    SelfExpr(int line = 0, int col = 0) : Expr(line, col) {}
     void accept(ExprVisitor *v) override
     {
         v->visit(this);
@@ -384,6 +396,7 @@ struct SelfExpr : Expr
 // Base expression
 struct BaseExpr : Expr
 {
+    BaseExpr(int line = 0, int col = 0) : Expr(line, col) {}
     void accept(ExprVisitor *v) override
     {
         v->visit(this);
@@ -397,8 +410,8 @@ struct MemberAssignExpr : Expr
     std::string member;
     ExprPtr value;
 
-    MemberAssignExpr(ExprPtr obj, const std::string& mem, ExprPtr val) 
-        : object(std::move(obj)), member(mem), value(std::move(val)) {}
+    MemberAssignExpr(ExprPtr obj, const std::string& mem, ExprPtr val, int line = 0, int col = 0) 
+        : Expr(line, col), object(std::move(obj)), member(mem), value(std::move(val)) {}
 
     void accept(ExprVisitor *v) override
     {
@@ -413,8 +426,8 @@ struct MethodCallExpr : Expr
     std::string method;
     std::vector<ExprPtr> args;
 
-    MethodCallExpr(ExprPtr obj, const std::string& meth, std::vector<ExprPtr>&& arguments) 
-        : object(std::move(obj)), method(meth), args(std::move(arguments)) {}
+    MethodCallExpr(ExprPtr obj, const std::string& meth, std::vector<ExprPtr>&& arguments, int line = 0, int col = 0) 
+        : Expr(line, col), object(std::move(obj)), method(meth), args(std::move(arguments)) {}
 
     void accept(ExprVisitor *v) override
     {

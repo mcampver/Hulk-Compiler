@@ -27,7 +27,7 @@ extern int yylineno;
 "//".*                      { /* skip single line comments */ }
 
 [0-9]+(\.[0-9]+)?           {
-                              yylval.expr = new NumberExpr(atof(yytext));
+                              yylval.expr = new NumberExpr(atof(yytext), yylineno);
                               return NUMBER;
                            }
 
@@ -54,8 +54,7 @@ extern int yylineno;
                                       processed += content[i];
                                   }
                               }
-                              
-                              yylval.expr = new StringExpr(processed);
+                                yylval.expr = new StringExpr(processed, yylineno);
                               return STRING;
                            }
 
@@ -66,11 +65,10 @@ extern int yylineno;
     if (strcmp(yytext, "let") == 0)      return LET;
     if (strcmp(yytext, "in") == 0)       return IN;
     if (strcmp(yytext, "while") == 0)    return WHILE;
-    if (strcmp(yytext, "for") == 0)      return FOR;
-    if (strcmp(yytext, "true") == 0)     { yylval.expr = new BooleanExpr(true);  return TRUE; }
-    if (strcmp(yytext, "false") == 0)    { yylval.expr = new BooleanExpr(false); return FALSE; }
-    if (strcmp(yytext, "True") == 0)     { yylval.expr = new BooleanExpr(true);  return TRUE; }
-    if (strcmp(yytext, "False") == 0)    { yylval.expr = new BooleanExpr(false); return FALSE; }
+    if (strcmp(yytext, "for") == 0)      return FOR;    if (strcmp(yytext, "true") == 0)     { yylval.expr = new BooleanExpr(true, yylineno);  return TRUE; }
+    if (strcmp(yytext, "false") == 0)    { yylval.expr = new BooleanExpr(false, yylineno); return FALSE; }
+    if (strcmp(yytext, "True") == 0)     { yylval.expr = new BooleanExpr(true, yylineno);  return TRUE; }
+    if (strcmp(yytext, "False") == 0)    { yylval.expr = new BooleanExpr(false, yylineno); return FALSE; }
     if (strcmp(yytext,"function") == 0)  return FUNCTION; 
     if (strcmp(yytext, "debug") == 0)    return DEBUG;
     if (strcmp(yytext, "type") == 0)     return TYPE;
