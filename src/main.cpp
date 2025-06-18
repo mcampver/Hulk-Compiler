@@ -104,19 +104,23 @@ int main(int argc, char *argv[])
         if (debugMode) std::cout << "=== Resolviendo nombres ===\n";
         NameResolver resolver;
         rootAST->accept(&resolver);
-        if (debugMode) std::cout << "=== Resolución de nombres OK ===\n";
-    }    catch (const std::exception &e)
+        if (debugMode) std::cout << "=== Resolución de nombres OK ===\n";    }
+    catch (const std::exception &e)
     {
         std::cerr << "Error en resolución de nombres en línea " << yylineno << ": " << e.what() << std::endl;
         std::cerr << "Fuente del error: NameResolver" << std::endl;
         fclose(file);
         return 2;
-    }// 2) Enhanced semantic analysis (for semantic and LLVM modes)
+    }
+
+    // 2) Enhanced semantic analysis (for semantic and LLVM modes)
+    SemanticAnalyzer* analyzer_ptr = nullptr; // Declare outside for LLVM use
     if (mode == MODE_SEMANTIC || mode == MODE_LLVM) {
         if (debugMode) std::cout << "=== Iniciando análisis semántico avanzado ===\n";
         
         try {
-            SemanticAnalyzer analyzer;
+            static SemanticAnalyzer analyzer; // Make it static to persist for LLVM
+            analyzer_ptr = &analyzer; // Store pointer for LLVM
             analyzer.analyze(rootAST);            if (analyzer.hasErrors()) {
                 std::cerr << "\n=== ERRORES SEMÁNTICOS ENCONTRADOS ===" << std::endl;
                 analyzer.printErrors();
@@ -137,13 +141,12 @@ int main(int argc, char *argv[])
             std::cout << "Análisis semántico completado exitosamente.\n";
             fclose(file);
             return 0;
-        }    }    // 3) LLVM code generation
+        }    }// 3) LLVM code generation
 #if ENABLE_LLVM
     if (mode == MODE_LLVM || showIR) {
         if (debugMode) std::cout << "=== Iniciando generación de código LLVM ===\n";
-        
-        try {
-            LLVMCodeGenerator codegen("hulk_module");
+          try {
+            LLVMCodeGenerator codegen("hulk_module", analyzer_ptr);
             rootAST->accept(&codegen);
             
             if (mode == MODE_LLVM || showIR) {

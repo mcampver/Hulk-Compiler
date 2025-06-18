@@ -3,6 +3,9 @@
 #include "CodeGenContext.hpp"
 #include "llvm/IR/Value.h"
 
+// Forward declaration to avoid circular includes
+class SemanticAnalyzer;
+
 /**
  * @brief LLVM IR code generator using the visitor pattern
  * 
@@ -14,6 +17,9 @@ private:
     // Internal context for standalone use (must be declared before context_)
     std::unique_ptr<CodeGenContext> owned_context_;
     CodeGenContext& context_;
+    
+    // Reference to semantic analyzer for type information
+    class SemanticAnalyzer* semantic_analyzer_;
     
     // Helper methods for built-in operations
     llvm::Value* generateBinaryOperation(const std::string& op, 
@@ -54,12 +60,12 @@ public:
     
     // Helper to generate main function content properly
     void generateMainContent(Program* prog);
-    
-    // Constructor with external context
-    explicit LLVMCodeGenerator(CodeGenContext& context) : owned_context_(nullptr), context_(context) {}
+      // Constructor with external context
+    explicit LLVMCodeGenerator(CodeGenContext& context, SemanticAnalyzer* analyzer = nullptr) 
+        : owned_context_(nullptr), context_(context), semantic_analyzer_(analyzer) {}
     
     // Constructor with module name (creates internal context)
-    explicit LLVMCodeGenerator(const std::string& module_name);
+    explicit LLVMCodeGenerator(const std::string& module_name, SemanticAnalyzer* analyzer = nullptr);
     
     // Method to print the generated LLVM module
     void printModule();

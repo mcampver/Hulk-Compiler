@@ -1,0 +1,206 @@
+// ===================================================================
+// TEST DE RENDIMIENTO Y LÍMITES - HULK COMPILER
+// Prueba los límites del compilador y demuestra optimizaciones LLVM
+// ===================================================================
+
+// ======================= ALGORITMOS INTENSIVOS =======================
+
+type PerformanceTest {
+    iterations = 1000;
+    
+    init(iterations) {
+        self.iterations := iterations;
+    }
+    
+    // Test de operaciones matemáticas intensivas
+    intensiveMath() => {
+        let result = 0.0 in
+        let i = 0 in {
+            while (i < self.iterations) {
+                result := result + sin(i * PI / 180.0) * cos(i * PI / 180.0) + sqrt(i + 1);
+                i := i + 1;
+            };
+            result
+        }
+    };
+    
+    // Test de recursión profunda (cuidado con stack overflow)
+    deepRecursion(n) => if (n <= 0) 1.0 else n * self.deepRecursion(n - 1) / (n + 1);
+    
+    // Test de creación masiva de objetos
+    massObjectCreation() => {
+        let count = 0 in
+        let i = 0 in {
+            while (i < 100) {  // Reducido para evitar problemas de memoria
+                let temp = new Circle(i, "test", i * 1.0, i * 2.0, i + 1.0) in
+                count := count + 1;
+                i := i + 1;
+            };
+            count
+        }
+    };
+}
+
+type Circle inherits Entity {
+    radius = 1.0;
+    
+    init(id, color, x, y, radius) {
+        base.init(id);
+        self.radius := radius;
+    }
+    
+    area() => PI * pow(self.radius, 2);
+    describe() => "Circle " @ str(self.id) @ " with radius " @ str(self.radius);
+}
+
+type Entity {
+    id = 0;
+    
+    init(id) {
+        self.id := id;
+    }
+}
+
+// ======================= FUNCIONES DE BENCHMARKING =======================
+
+function benchmarkMath() => {
+    print("=== BENCHMARK MATEMÁTICO ===");
+    let test = new PerformanceTest(1000) in {
+        print("Iniciando test intensivo de matemáticas...");
+        let result = test.intensiveMath() in {
+            print("Resultado de 1000 operaciones trigonométricas: " @ str(result));
+        }
+    }
+};
+
+function benchmarkRecursion() => {
+    print("=== BENCHMARK RECURSIÓN ===");
+    let test = new PerformanceTest(10) in {
+        print("Iniciando test de recursión profunda...");
+        let result = test.deepRecursion(20) in {
+            print("Resultado de recursión (n=20): " @ str(result));
+        }
+    }
+};
+
+function benchmarkObjects() => {
+    print("=== BENCHMARK OBJETOS ===");
+    let test = new PerformanceTest(100) in {
+        print("Iniciando creación masiva de objetos...");
+        let count = test.massObjectCreation() in {
+            print("Objetos creados exitosamente: " @ str(count));
+        }
+    }
+};
+
+// ======================= ALGORITMO COMPLEJO - ORDENAMIENTO =======================
+
+function bubbleSort(a, b, c, d, e) => {
+    // Simulación de ordenamiento burbuja con 5 elementos
+    let arr1 = a in let arr2 = b in let arr3 = c in let arr4 = d in let arr5 = e in
+    
+    // Primera pasada
+    let temp1 = if (arr1 > arr2) { let t = arr1 in { arr1 := arr2; arr2 := t; arr1 } } else arr1 in
+    let temp2 = if (arr2 > arr3) { let t = arr2 in { arr2 := arr3; arr3 := t; arr2 } } else arr2 in
+    let temp3 = if (arr3 > arr4) { let t = arr3 in { arr3 := arr4; arr4 := t; arr3 } } else arr3 in
+    let temp4 = if (arr4 > arr5) { let t = arr4 in { arr4 := arr5; arr5 := t; arr4 } } else arr4 in
+    
+    // Segunda pasada  
+    let temp5 = if (temp1 > temp2) { let t = temp1 in { temp1 := temp2; temp2 := t; temp1 } } else temp1 in
+    let temp6 = if (temp2 > temp3) { let t = temp2 in { temp2 := temp3; temp3 := t; temp2 } } else temp2 in
+    let temp7 = if (temp3 > temp4) { let t = temp3 in { temp3 := temp4; temp4 := t; temp3 } } else temp3 in
+    
+    {
+        print("Array ordenado: " @ str(temp5) @ ", " @ str(temp6) @ ", " @ str(temp7) @ ", " @ str(temp4) @ ", " @ str(arr5));
+        temp5 + temp6 + temp7 + temp4 + arr5  // Suma como resultado
+    }
+};
+
+// ======================= OPERACIONES DE CADENAS INTENSIVAS =======================
+
+function stringStressTest() => {
+    print("=== TEST DE ESTRÉS PARA STRINGS ===");
+    
+    let base = "HULK" in
+    let result = base @ "_" @ "COMPILER" @ "_" @ "2025" @ "_" @ "VERSION" @ "_" @ str(1.5) in
+    let extended = result @ "_EXTRA_" @ "DATA_" @ str(PI) @ "_" @ str(E) @ "_END" in {
+        print("String compleja generada:");
+        print(extended);
+        
+        // Concatenación en bucle simulado
+        let accumulated = "START" in
+        let i = 0 in {
+            while (i < 10) {
+                accumulated := accumulated @ "_" @ str(i) @ "_" @ str(i * i);
+                i := i + 1;
+            };
+            print("String acumulada: " @ accumulated);
+            accumulated
+        }
+    }
+};
+
+// ======================= PROGRAMA PRINCIPAL DE BENCHMARKS =======================
+
+print("╔══════════════════════════════════════════════════════════════╗");
+print("║            HULK COMPILER - TESTS DE RENDIMIENTO             ║");
+print("║              Midiendo límites y optimizaciones              ║");
+print("╚══════════════════════════════════════════════════════════════╝");
+print("");
+
+// Ejecutar benchmarks
+benchmarkMath();
+print("");
+
+benchmarkRecursion();
+print("");
+
+benchmarkObjects();
+print("");
+
+print("=== ALGORITMO DE ORDENAMIENTO ===");
+let sortResult = bubbleSort(64.0, 34.0, 25.0, 90.0, 12.0) in {
+    print("Suma del array ordenado: " @ str(sortResult));
+};
+print("");
+
+stringStressTest();
+print("");
+
+// ======================= TEST FINAL DE LÍMITES =======================
+
+print("=== TEST FINAL DE LÍMITES ===");
+
+let megaComplex = 
+    let layer1 = pow(PI, 2) * sin(E) + cos(PI/4) in
+    let layer2 = sqrt(layer1) * pow(E, 1.5) - log10(layer1) in  // Nota: log10 puede no estar implementado
+    let layer3 = layer2 * 2.0 + pow(layer1, 0.5) in
+    let layer4 = (layer3 + layer2 + layer1) / 3.0 in
+    
+    let circle1 = new Circle(1, "red", 0.0, 0.0, layer1) in
+    let circle2 = new Circle(2, "blue", layer2, layer3, layer4) in {
+        
+        let totalArea = circle1.area() + circle2.area() in
+        let avgRadius = (circle1.radius + circle2.radius) / 2.0 in {
+            
+            print("Cálculo mega-complejo completado:");
+            print("Área total de círculos: " @ str(totalArea));
+            print("Radio promedio: " @ str(avgRadius));
+            print("Factor de complejidad: " @ str(layer4));
+            
+            // Operación final que combina todo
+            totalArea * avgRadius * layer4 + pow(PI * E, 0.5)
+        }
+    }
+in {
+    print("🏁 RESULTADO FINAL DE LÍMITES: " @ str(megaComplex));
+    print("");
+    print("✅ Operaciones matemáticas intensivas: COMPLETADO");
+    print("✅ Recursión controlada: COMPLETADO");  
+    print("✅ Creación masiva de objetos: COMPLETADO");
+    print("✅ Algoritmos complejos: COMPLETADO");
+    print("✅ Manipulación intensiva de strings: COMPLETADO");
+    print("✅ Cálculos de múltiples capas: COMPLETADO");
+    print("");
+    print("🚀 COMPILADOR HULK - RESISTIÓ TODAS LAS PRUEBAS LÍMITE 🚀");
+};

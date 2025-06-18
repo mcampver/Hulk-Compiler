@@ -61,12 +61,18 @@ public:SemanticAnalyzer() : current_type_(TypeInfo::Kind::Unknown) {
      */
     void printErrors() const {
         error_manager_.printErrors();
-    }    
-    /**
+    }      /**
      * @brief Get current inferred type
      */
     const TypeInfo& getCurrentType() const {
         return current_type_;
+    }
+    
+    /**
+     * @brief Get symbol table for type information (for code generation)
+     */
+    const SymbolTable& getSymbolTable() const {
+        return symbol_table_;
     }
     
     // Visitor pattern implementation - ExprVisitor

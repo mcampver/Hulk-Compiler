@@ -1,4 +1,5 @@
 #include "LLVMCodeGenerator.hpp"
+#include "../Semantic/SemanticAnalyzer.hpp"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Function.h"
 #include "llvm/IR/BasicBlock.h"
@@ -7,9 +8,10 @@
 #include <iostream>
 
 // Constructor with module name (creates internal context)
-LLVMCodeGenerator::LLVMCodeGenerator(const std::string& module_name) 
+LLVMCodeGenerator::LLVMCodeGenerator(const std::string& module_name, SemanticAnalyzer* analyzer) 
     : owned_context_(std::make_unique<CodeGenContext>()), 
-      context_(*owned_context_) {
+      context_(*owned_context_), 
+      semantic_analyzer_(analyzer) {
     // Note: module_name parameter ignored for now since CodeGenContext creates fixed name
     (void)module_name; // Suppress unused parameter warning
 }
@@ -123,7 +125,7 @@ void LLVMCodeGenerator::visit(CallExpr* expr) {
     if (expr->callee == "debug" || expr->callee == "type" || expr->callee == "assert" ||
         expr->callee == "print" || expr->callee == "sin" || expr->callee == "cos" ||
         expr->callee == "sqrt" || expr->callee == "exp" || expr->callee == "rand" ||
-        expr->callee == "str") {
+        expr->callee == "str" || expr->callee == "PI" || expr->callee == "E") {
         llvm::Value* result = generateBuiltinCall(expr->callee, args);
         context_.pushValue(result);
         return;
@@ -566,10 +568,12 @@ void LLVMCodeGenerator::visit(FunctionDecl* func) {
     
     llvm::Type* return_type = context_.getLLVMType("Number"); // Simplified
     llvm::FunctionType* func_type = llvm::FunctionType::get(return_type, param_types, false);
-    
-    // Create function
+      // Create function
     llvm::Function* llvm_func = llvm::Function::Create(
         func_type, llvm::Function::ExternalLinkage, func->name, context_.getModule());
+    
+    // Register function BEFORE generating body (to allow recursion)
+    context_.declareFunction(func->name, llvm_func);
     
     // Set parameter names
     auto arg_it = llvm_func->arg_begin();
@@ -594,16 +598,14 @@ void LLVMCodeGenerator::visit(FunctionDecl* func) {
     }
       // Generate function body
     func->body->accept(this);
-    
-    // Create return instruction only if no terminator exists
+      // Create return instruction only if no terminator exists
     llvm::BasicBlock* current_block = context_.getBuilder().GetInsertBlock();
     if (!current_block->getTerminator()) {
         llvm::Value* return_value = context_.popValue();
         context_.getBuilder().CreateRet(return_value);
     }
     
-    // Register function
-    context_.declareFunction(func->name, llvm_func);
+    // Function already registered before body generation
     
     // Pop function scope
     context_.popScope();
@@ -993,6 +995,12 @@ llvm::Value* LLVMCodeGenerator::generateBuiltinCall(const std::string& name,
         if (func) {
             return builder.CreateCall(func, {});
         }
+    } else if (name == "PI") {
+        // Return PI constant (3.141592653589793)
+        return llvm::ConstantFP::get(context_.getLLVMContext(), llvm::APFloat(3.141592653589793));
+    } else if (name == "E") {
+        // Return E constant (2.718281828459045)
+        return llvm::ConstantFP::get(context_.getLLVMContext(), llvm::APFloat(2.718281828459045));
     } else if (name == "str") {
         if (!args.empty()) {
             // Dynamically convert based on the argument type
@@ -1414,26 +1422,59 @@ bool LLVMCodeGenerator::containsStringOperations(Expr* expr) {
 
 // Helper to infer parameter type based on method name and parameter name
 llvm::Type* LLVMCodeGenerator::inferParameterType(const std::string& method_name, const std::string& param_name) {
-    // String parameters (common cases)
-    if (param_name == "prefix" || param_name == "suffix" || param_name == "wrapper" ||
-        param_name == "text" || param_name == "str" || param_name == "message" ||
+    // If we have semantic analyzer, try to get type information from it
+    if (semantic_analyzer_) {
+        auto& symbol_table = semantic_analyzer_->getSymbolTable();
+        
+        // Try to find the function in the symbol table
+        auto func_symbol = symbol_table.lookupFunction(method_name);
+        if (func_symbol) {
+            // Get parameter names for this function
+            auto param_names = symbol_table.getFunctionParams(method_name);
+            
+            // Find the parameter index by name
+            for (size_t i = 0; i < param_names.size() && i < func_symbol->parameter_types.size(); ++i) {
+                if (param_names[i] == param_name) {
+                    const auto& param_type = func_symbol->parameter_types[i];
+                    
+                    // Convert TypeInfo to LLVM type
+                    switch (param_type.getKind()) {
+                        case TypeInfo::Kind::Number:
+                            return llvm::Type::getDoubleTy(context_.getLLVMContext());
+                        case TypeInfo::Kind::String:
+                            return llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context_.getLLVMContext()));
+                        case TypeInfo::Kind::Boolean:
+                            return llvm::Type::getInt1Ty(context_.getLLVMContext());
+                        default:
+                            // Unknown type, continue to heuristics
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Fallback to heuristic-based type inference
+    // In a properly designed compiler, parameter types should come from:
+    // 1. Explicit type annotations in the source code
+    // 2. Type inference from semantic analysis
+    // 3. Context analysis of how the parameter is used
+    
+    // String types are mainly for explicit string operations
+    if (param_name == "text" || param_name == "str" || param_name == "message" ||
         param_name == "name" || param_name == "brand" || param_name == "company" ||
-        param_name == "email" || param_name == "a" || param_name == "b" || param_name == "c") {
+        param_name == "email" || param_name == "prefix" || param_name == "suffix" ||
+        param_name == "wrapper") {
         return llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context_.getLLVMContext()));
     }
     
-    // Methods that typically take string parameters
+    // String methods typically expect string parameters
     if (method_name == "addPrefix" || method_name == "addSuffix" || method_name == "wrapWith" ||
         method_name == "buildComplexString" || method_name == "setText") {
         return llvm::PointerType::getUnqual(llvm::Type::getInt8Ty(context_.getLLVMContext()));
     }
     
-    // Numeric parameters (amounts, coordinates, values)
-    if (param_name == "amount" || param_name == "x" || param_name == "y" || param_name == "exp" ||
-        param_name == "value" || param_name == "salary" || param_name == "age" || param_name == "speed") {
-        return llvm::Type::getDoubleTy(context_.getLLVMContext());
-    }
-    
-    // Default to Number type for unknown parameters
-    return context_.getLLVMType("Number");
+    // Default to Number type - this is the most common case in HULK
+    // Numbers can be automatically converted to strings when needed
+    return llvm::Type::getDoubleTy(context_.getLLVMContext());
 }

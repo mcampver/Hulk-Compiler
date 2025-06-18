@@ -1,0 +1,24 @@
+// Test extremadamente simple para encontrar el problema
+
+type Calculadora {
+    precision = 2;
+    
+    init(prec) {
+        self.precision := prec;
+    }
+    
+    // Versión MUY simplificada - solo números
+    calcular(a, b, selector) => 
+        if (selector > 1.0) {
+            a + b;
+        }
+        else {
+            a * b;
+        };
+};
+
+// Test simple
+let calc = new Calculadora(4) in {
+    let resultado = calc.calcular(2.0, 8.0, 2.0) in
+    print("Resultado: " @ str(resultado));
+};

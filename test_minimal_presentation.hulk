@@ -1,0 +1,24 @@
+// Script mínimo para identificar el problema en LLVM
+
+print("Probando herencia simple...");
+
+type Vehicle {
+    wheels = 4;
+    fuel = 100.0;
+    
+    init(w, f) {
+        self.wheels := w;
+        self.fuel := f;
+    }
+    
+    drive() => "[CAR] Vehicle con " @ str(self.wheels) @ " ruedas";
+};
+
+let car = new Vehicle(4, 85.0) in
+print(car.drive());
+
+print("Probando PI y E...");
+print("PI = " @ str(PI()));
+print("E = " @ str(E()));
+
+print("Test completado");

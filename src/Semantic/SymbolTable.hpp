@@ -26,12 +26,18 @@ struct Symbol {
 struct FunctionSymbol {
     std::string name;
     std::vector<TypeInfo> parameter_types;
+    std::vector<std::string> parameter_names;
     TypeInfo return_type;
     int declaration_line;
     
     FunctionSymbol(const std::string& n, const std::vector<TypeInfo>& params, 
                    const TypeInfo& ret, int line = 0)
         : name(n), parameter_types(params), return_type(ret), declaration_line(line) {}
+        
+    FunctionSymbol(const std::string& n, const std::vector<TypeInfo>& params, 
+                   const std::vector<std::string>& param_names, const TypeInfo& ret, int line = 0)
+        : name(n), parameter_types(params), parameter_names(param_names), 
+          return_type(ret), declaration_line(line) {}
 };
 
 /**
@@ -113,8 +119,7 @@ public:
         }
         return nullptr;
     }
-    
-    /**
+      /**
      * @brief Declare a function
      */
     bool declareFunction(const std::string& name, const std::vector<TypeInfo>& params,
@@ -123,15 +128,36 @@ public:
         if (functions_.find(name) != functions_.end()) {
             return false;
         }
-        
+
         functions_[name] = std::make_shared<FunctionSymbol>(name, params, return_type, line);
         return true;
     }
-    
+
     /**
+     * @brief Declare a function with parameter names and types
+     */
+    bool declareFunction(const std::string& name, const std::vector<TypeInfo>& params,
+                        const std::vector<std::string>& param_names, const TypeInfo& return_type, int line = 0) {
+        // Check if function already exists
+        if (functions_.find(name) != functions_.end()) {
+            return false;
+        }
+
+        functions_[name] = std::make_shared<FunctionSymbol>(name, params, param_names, return_type, line);
+        return true;
+    }
+      /**
      * @brief Look up a function
      */
     std::shared_ptr<FunctionSymbol> lookupFunction(const std::string& name) {
+        auto found = functions_.find(name);
+        return (found != functions_.end()) ? found->second : nullptr;
+    }
+    
+    /**
+     * @brief Look up a function (const version)
+     */
+    std::shared_ptr<const FunctionSymbol> lookupFunction(const std::string& name) const {
         auto found = functions_.find(name);
         return (found != functions_.end()) ? found->second : nullptr;
     }
@@ -179,13 +205,17 @@ public:
     bool isFunctionDeclared(const std::string& name) const {
         return functions_.find(name) != functions_.end();
     }
-    
-    /**
+      /**
      * @brief Get function parameters (simplified for compatibility)
      */
     std::vector<std::string> getFunctionParams(const std::string& name) const {
         auto found = functions_.find(name);
         if (found != functions_.end()) {
+            // If we have stored parameter names, use them
+            if (!found->second->parameter_names.empty()) {
+                return found->second->parameter_names;
+            }
+            // Otherwise, generate generic names
             std::vector<std::string> params;
             for (size_t i = 0; i < found->second->parameter_types.size(); ++i) {
                 params.push_back("param" + std::to_string(i));

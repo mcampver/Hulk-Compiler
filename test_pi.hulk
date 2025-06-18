@@ -1,0 +1,6 @@
+// Test simple para PI y E
+print("Probando PI: " @ str(PI()));
+print("Probando E: " @ str(E()));
+
+let area = PI() * 5.0 * 5.0 in
+print("Area circulo: " @ str(area));

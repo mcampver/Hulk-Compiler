@@ -1,0 +1,20 @@
+// Test específico para ver cómo maneja LLVM los tipos de parámetros
+
+type Simple {
+    value = 0.0;
+    
+    init(v) {
+        self.value := v;
+    }
+    
+    // Método simple que suma dos números - SIN if-else
+    sumar(a, b) => a + b;
+    
+    // Método que solo usa números literales
+    sumarLiterales() => 5.0 + 3.0;
+};
+
+let obj = new Simple(10.0) in {
+    print("Suma literales: " @ str(obj.sumarLiterales()));
+    print("Suma parámetros: " @ str(obj.sumar(2.0, 3.0)));
+};

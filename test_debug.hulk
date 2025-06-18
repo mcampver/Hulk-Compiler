@@ -1,0 +1,32 @@
+// Test para identificar el problema en script_presentacion.hulk
+
+// Test 1: Herencia básica
+type Vehicle {
+    wheels = 4;
+    fuel = 100.0;
+    
+    init(w, f) {
+        self.wheels := w;
+        self.fuel := f;
+    }
+    
+    drive() => "[CAR] Vehicle con " @ str(self.wheels) @ " ruedas, combustible: " @ str(self.fuel) @ "%";
+};
+
+type Car inherits Vehicle {
+    brand = "Generic";
+    
+    init(w, f, b) {
+        base.init(w, f);
+        self.brand := b;
+    }
+    
+    drive() => "[RACING] " @ self.brand @ " acelerando suavemente";
+};
+
+// Test básico de herencia
+let ferrari = new Car(4, 85.0, "Ferrari") in {
+    print("Test herencia: " @ ferrari.drive());
+};
+
+print("Test completado - herencia básica funciona");

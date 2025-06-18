@@ -175,16 +175,20 @@ help:
 	@echo "  $(BLUE)make clean$(RESET)    - Limpiar archivos generados"
 	@echo "  $(BLUE)make help$(RESET)     - Mostrar esta ayuda"
 	@echo ""
-	@echo "$(YELLOW)⚡ Opciones avanzadas del compilador:$(RESET)"
-	@echo "  $(MAGENTA)make execute-llvm$(RESET)   - Ejecutar con generación LLVM IR optimizado"
+	@echo "$(YELLOW)⚡ Opciones avanzadas del compilador:$(RESET)"	@echo "  $(MAGENTA)make execute-llvm$(RESET)   - Ejecutar con generación LLVM IR optimizado"
 	@echo "  $(MAGENTA)make execute-debug$(RESET)  - Ejecutar con información detallada de depuración"
+	@echo "  $(MAGENTA)make execute-show-ir$(RESET) - Mostrar LLVM IR generado y ejecutar"
 	@echo "  $(MAGENTA)make show-ir$(RESET)        - Mostrar solo el código LLVM IR generado"
-	@echo ""
-	@echo "$(YELLOW)🎛️ Uso con argumentos personalizados:$(RESET)"
+	@echo ""	@echo "$(YELLOW)🎛️ Uso con argumentos personalizados:$(RESET)"
 	@echo "  $(MAGENTA)make execute ARGS=\"--llvm\"$(RESET)     - Generar código LLVM IR optimizado"
 	@echo "  $(MAGENTA)make execute ARGS=\"--debug\"$(RESET)    - Mostrar información de depuración detallada"
 	@echo "  $(MAGENTA)make execute ARGS=\"--show-ir\"$(RESET)  - Mostrar solo el código LLVM IR"
 	@echo "  $(MAGENTA)make execute ARGS=\"--llvm --debug\"$(RESET) - Combinar múltiples opciones"
+	@echo ""
+	@echo "$(YELLOW)📁 Uso con archivos específicos:$(RESET)"
+	@echo "  $(MAGENTA)make execute FILE=\"script_presentacion.hulk\"$(RESET) - Ejecutar archivo específico"	@echo "  $(MAGENTA)make execute-llvm FILE=\"tests/test_final.hulk\"$(RESET) - LLVM con archivo específico"
+	@echo "  $(MAGENTA)make execute-debug FILE=\"examples/demo.hulk\"$(RESET) - Debug con archivo específico"
+	@echo "  $(MAGENTA)make execute-show-ir FILE=\"script_presentacion.hulk\"$(RESET) - IR con archivo específico"
 	@echo ""
 	@echo "$(YELLOW)💡 Ejecución directa (alternativa al makefile):$(RESET)"
 	@echo "  $(CYAN)./hulk/hulk_compiler.exe script.hulk$(RESET)         - Modo interpretación normal"
@@ -224,7 +228,20 @@ compile: $(EXECUTABLE)
 # Ejecutar el programa HULK (con dependencia automática en compile)
 execute: compile
 	@echo "$(CYAN)🚀 Ejecutando HULK Compiler...$(RESET)"
-	@if [ -f "$(SCRIPT_FILE)" ]; then \
+	@if [ -n "$(FILE)" ]; then \
+		if [ -f "$(FILE)" ]; then \
+			if [ -n "$(ARGS)" ]; then \
+				echo "$(GREEN)📄 Ejecutando: $(FILE) $(ARGS)$(RESET)"; \
+				./$(EXECUTABLE) $(FILE) $(ARGS); \
+			else \
+				echo "$(GREEN)📄 Ejecutando: $(FILE)$(RESET)"; \
+				./$(EXECUTABLE) $(FILE); \
+			fi \
+		else \
+			echo "$(RED)❌ Error: No se encuentra $(FILE)$(RESET)"; \
+			exit 1; \
+		fi \
+	elif [ -f "$(SCRIPT_FILE)" ]; then \
 		if [ -n "$(ARGS)" ]; then \
 			echo "$(GREEN)📄 Ejecutando: $(SCRIPT_FILE) $(ARGS)$(RESET)"; \
 			./$(EXECUTABLE) $(SCRIPT_FILE) $(ARGS); \
@@ -235,6 +252,7 @@ execute: compile
 	else \
 		echo "$(RED)❌ Error: No se encuentra $(SCRIPT_FILE)$(RESET)"; \
 		echo "$(YELLOW)💡 Copie su código HULK en el archivo $(SCRIPT_FILE) en la raíz del proyecto$(RESET)"; \
+		echo "$(YELLOW)💡 O use: make execute FILE=<archivo.hulk>$(RESET)"; \
 		exit 1; \
 	fi
 
@@ -244,25 +262,45 @@ execute: compile
 # Opción --llvm: Genera código intermedio LLVM, muestra IR y ejecuta optimizado
 execute-llvm: compile
 	@echo "$(CYAN)🚀 Ejecutando HULK Compiler con LLVM IR optimizado...$(RESET)"
-	@if [ -f "$(SCRIPT_FILE)" ]; then \
+	@if [ -n "$(FILE)" ]; then \
+		if [ -f "$(FILE)" ]; then \
+			echo "$(GREEN)📄 Ejecutando: $(FILE) --llvm$(RESET)"; \
+			echo "$(BLUE)💡 Generando código LLVM IR optimizado y ejecutando...$(RESET)"; \
+			./$(EXECUTABLE) $(FILE) --llvm; \
+		else \
+			echo "$(RED)❌ Error: No se encuentra $(FILE)$(RESET)"; \
+			exit 1; \
+		fi \
+	elif [ -f "$(SCRIPT_FILE)" ]; then \
 		echo "$(GREEN)📄 Ejecutando: $(SCRIPT_FILE) --llvm$(RESET)"; \
 		echo "$(BLUE)💡 Generando código LLVM IR optimizado y ejecutando...$(RESET)"; \
 		./$(EXECUTABLE) $(SCRIPT_FILE) --llvm; \
 	else \
 		echo "$(RED)❌ Error: No se encuentra $(SCRIPT_FILE)$(RESET)"; \
+		echo "$(YELLOW)💡 Use: make execute-llvm FILE=<archivo.hulk>$(RESET)"; \
 		exit 1; \
 	fi
 
-# Ejecutar con información detallada de depuración  
+# Ejecutar con información detallada de depuración
 # Opción --debug: Muestra análisis sintáctico, semántico, resolución de tipos y herencia
 execute-debug: compile
 	@echo "$(CYAN)🚀 Ejecutando HULK Compiler con información de depuración...$(RESET)"
-	@if [ -f "$(SCRIPT_FILE)" ]; then \
+	@if [ -n "$(FILE)" ]; then \
+		if [ -f "$(FILE)" ]; then \
+			echo "$(GREEN)📄 Ejecutando: $(FILE) --debug$(RESET)"; \
+			echo "$(BLUE)🐛 Mostrando información detallada de compilación...$(RESET)"; \
+			./$(EXECUTABLE) $(FILE) --debug; \
+		else \
+			echo "$(RED)❌ Error: No se encuentra $(FILE)$(RESET)"; \
+			exit 1; \
+		fi \
+	elif [ -f "$(SCRIPT_FILE)" ]; then \
 		echo "$(GREEN)📄 Ejecutando: $(SCRIPT_FILE) --debug$(RESET)"; \
 		echo "$(BLUE)🐛 Mostrando información detallada de compilación...$(RESET)"; \
 		./$(EXECUTABLE) $(SCRIPT_FILE) --debug; \
 	else \
 		echo "$(RED)❌ Error: No se encuentra $(SCRIPT_FILE)$(RESET)"; \
+		echo "$(YELLOW)💡 Use: make execute-debug FILE=<archivo.hulk>$(RESET)"; \
 		exit 1; \
 	fi
 
@@ -270,12 +308,44 @@ execute-debug: compile
 # Opción --show-ir: Solo genera y muestra el código intermedio LLVM IR
 show-ir: compile
 	@echo "$(CYAN)🚀 Generando código LLVM IR para análisis...$(RESET)"
-	@if [ -f "$(SCRIPT_FILE)" ]; then \
+	@if [ -n "$(FILE)" ]; then \
+		if [ -f "$(FILE)" ]; then \
+			echo "$(GREEN)📄 Generando IR para: $(FILE)$(RESET)"; \
+			echo "$(BLUE)📊 Solo mostrar código LLVM IR (sin ejecutar)...$(RESET)"; \
+			./$(EXECUTABLE) $(FILE) --show-ir; \
+		else \
+			echo "$(RED)❌ Error: No se encuentra $(FILE)$(RESET)"; \
+			exit 1; \
+		fi \
+	elif [ -f "$(SCRIPT_FILE)" ]; then \
 		echo "$(GREEN)📄 Generando IR para: $(SCRIPT_FILE)$(RESET)"; \
 		echo "$(BLUE)📊 Solo mostrar código LLVM IR (sin ejecutar)...$(RESET)"; \
+		./$(EXECUTABLE) $(SCRIPT_FILE) --show-ir; \	else \
+		echo "$(RED)❌ Error: No se encuentra $(SCRIPT_FILE)$(RESET)"; \
+		echo "$(YELLOW)💡 Use: make show-ir FILE=<archivo.hulk>$(RESET)"; \
+		exit 1; \
+	fi
+
+# Ejecutar mostrando el código LLVM IR generado y después ejecutar
+# Opción --show-ir con ejecución: Genera IR, lo muestra y luego ejecuta el programa
+execute-show-ir: compile
+	@echo "$(CYAN)🚀 Ejecutando HULK Compiler mostrando LLVM IR...$(RESET)"
+	@if [ -n "$(FILE)" ]; then \
+		if [ -f "$(FILE)" ]; then \
+			echo "$(GREEN)📄 Ejecutando: $(FILE) --show-ir$(RESET)"; \
+			echo "$(BLUE)📊 Mostrando código LLVM IR y ejecutando...$(RESET)"; \
+			./$(EXECUTABLE) $(FILE) --show-ir; \
+		else \
+			echo "$(RED)❌ Error: No se encuentra $(FILE)$(RESET)"; \
+			exit 1; \
+		fi \
+	elif [ -f "$(SCRIPT_FILE)" ]; then \
+		echo "$(GREEN)📄 Ejecutando: $(SCRIPT_FILE) --show-ir$(RESET)"; \
+		echo "$(BLUE)📊 Mostrando código LLVM IR y ejecutando...$(RESET)"; \
 		./$(EXECUTABLE) $(SCRIPT_FILE) --show-ir; \
 	else \
 		echo "$(RED)❌ Error: No se encuentra $(SCRIPT_FILE)$(RESET)"; \
+		echo "$(YELLOW)💡 Use: make execute-show-ir FILE=<archivo.hulk>$(RESET)"; \
 		exit 1; \
 	fi
 

@@ -1,0 +1,424 @@
+// ===================================================================
+// DEMOSTRACIÓN FINAL ULTRA-COMPLETA - HULK COMPILER
+// Este es el test definitivo que muestra TODAS las capacidades
+// Perfecto para el gran finale de tu exposición
+// ===================================================================
+
+print("╔═══════════════════════════════════════════════════════════════════════════════╗");
+print("║                          🌟 HULK COMPILER 2025 🌟                           ║");
+print("║                        DEMOSTRACIÓN ULTRA-COMPLETA                           ║");
+print("║                     Compilación - Universidad de La Habana                   ║");
+print("║                  Mauro Campver C-311 & Rodrigo Mederos C-312                ║");
+print("╚═══════════════════════════════════════════════════════════════════════════════╝");
+print("");
+
+// ======================= SISTEMA DE SIMULACIÓN COMPLEJO =======================
+
+print("🌟 INICIANDO SIMULACIÓN DE ECOSISTEMA TECNOLÓGICO AVANZADO 🌟");
+print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+// Jerarquía de herencia compleja de 4 niveles
+type Entity {
+    id = 0;
+    name = "Unknown";
+    timestamp = 0.0;
+    
+    init(id, name) {
+        self.id := id;
+        self.name := name;
+        self.timestamp := id * 1000.0 + PI * E;  // Timestamp único usando constantes matemáticas
+    }
+    
+    describe() => "Entity[" @ str(self.id) @ "]: " @ self.name @ " @ t=" @ str(self.timestamp);
+    getType() => "Entity";
+    computeHash() => pow(self.id, 2) + sin(self.timestamp / 1000.0) * 1000.0;
+}
+
+type PhysicalObject inherits Entity {
+    mass = 1.0;
+    volume = 1.0;
+    temperature = 20.0;
+    
+    init(id, name, mass, volume) {
+        base.init(id, name);
+        self.mass := mass;
+        self.volume := volume;
+        self.temperature := 20.0 + mass * volume / 10.0;  // Temperatura simulada
+    }
+    
+    getDensity() => self.mass / self.volume;
+    getType() => "PhysicalObject";
+    
+    describe() => base.describe() @ " | Physical: mass=" @ str(self.mass) @ 
+                  "kg, ρ=" @ str(self.getDensity()) @ "kg/m³, T=" @ str(self.temperature) @ "°C";
+    
+    // Simulación de física básica
+    applyForce(force, time) => {
+        let acceleration = force / self.mass in  // F = ma, entonces a = F/m
+        let deltaV = acceleration * time in
+        let energy = 0.5 * self.mass * pow(deltaV, 2) in {
+            self.temperature := self.temperature + energy / (self.mass * 4.18);  // Calor específico del agua aprox
+            "Force=" @ str(force) @ "N applied for " @ str(time) @ 
+            "s → ΔT=" @ str(energy / (self.mass * 4.18)) @ "°C"
+        }
+    };
+}
+
+type Machine inherits PhysicalObject {
+    powerRating = 100.0;
+    efficiency = 0.85;
+    operatingHours = 0.0;
+    
+    init(id, name, mass, volume, power) {
+        base.init(id, name, mass, volume);
+        self.powerRating := power;
+        self.efficiency := 0.85 + sin(id * PI / 180.0) * 0.1;  // Eficiencia variable por ID
+        self.operatingHours := 0.0;
+    }
+    
+    getType() => "Machine";
+    
+    describe() => base.describe() @ " | Machine: P=" @ str(self.powerRating) @ 
+                  "W, η=" @ str(self.efficiency * 100.0) @ "%, hours=" @ str(self.operatingHours);
+    
+    operate(hours) => {
+        self.operatingHours := self.operatingHours + hours;
+        let energyConsumed = self.powerRating * hours / 1000.0 in  // kWh
+        let heatGenerated = energyConsumed * (1.0 - self.efficiency) * 3600.0 in  // Joules
+        let tempIncrease = heatGenerated / (self.mass * 4.18) in {
+            self.temperature := self.temperature + tempIncrease;
+            "Operated " @ str(hours) @ "h → Energy: " @ str(energyConsumed) @ 
+            "kWh, Heat: +" @ str(tempIncrease) @ "°C"
+        }
+    };
+    
+    calculateLifetime() => {
+        let baseLife = 10000.0 in  // Horas base
+        let tempFactor = 1.0 - (self.temperature - 20.0) / 1000.0 in  // Reduce vida por temperatura
+        let efficiencyFactor = self.efficiency in  // Mejor eficiencia = más vida
+        baseLife * tempFactor * efficiencyFactor
+    };
+}
+
+type Robot inherits Machine {
+    posX = 0.0;
+    posY = 0.0;
+    batteryLevel = 100.0;
+    aiLevel = 1;
+    
+    init(id, name, mass, volume, power, aiLevel) {
+        base.init(id, name, mass, volume, power);
+        self.posX := sin(id * PI / 8.0) * 10.0;  // Posición inicial algorítmica
+        self.posY := cos(id * PI / 8.0) * 10.0;
+        self.batteryLevel := 100.0;
+        self.aiLevel := aiLevel;
+    }
+    
+    getType() => "Robot";
+    
+    describe() => base.describe() @ " | Robot: pos=(" @ str(self.posX) @ "," @ str(self.posY) @ 
+                  "), battery=" @ str(self.batteryLevel) @ "%, AI-L" @ str(self.aiLevel);
+    
+    move(deltaX, deltaY) => {
+        let distance = sqrt(pow(deltaX, 2) + pow(deltaY, 2)) in
+        let energyCost = distance * self.mass / 100.0 in
+        let timeCost = distance / (10.0 + self.aiLevel * 2.0) in {  // AI mejora velocidad
+            if (self.batteryLevel >= energyCost) {
+                self.posX := self.posX + deltaX;
+                self.posY := self.posY + deltaY;
+                self.batteryLevel := self.batteryLevel - energyCost;
+                self.operatingHours := self.operatingHours + timeCost;
+                "Moved " @ str(distance) @ "m to (" @ str(self.posX) @ "," @ str(self.posY) @ 
+                ") | Cost: " @ str(energyCost) @ "% battery, " @ str(timeCost) @ "h"
+            } else {
+                "INSUFFICIENT BATTERY: need " @ str(energyCost) @ "%, have " @ str(self.batteryLevel) @ "%"
+            }
+        }
+    };
+    
+    recharge() => {
+        self.batteryLevel := 100.0;
+        "Battery recharged to 100%"
+    };
+    
+    calculatePathOptimization(targetX, targetY) => {
+        let directDistance = sqrt(pow(targetX - self.posX, 2) + pow(targetY - self.posY, 2)) in
+        let optimalAngle = if (targetX == self.posX) {
+            if (targetY > self.posY) PI/2 else 3*PI/2
+        } else {
+            if (targetX > self.posX) 0.0 else PI
+        } in
+        let energyEstimate = directDistance * self.mass / 100.0 in
+        let timeEstimate = directDistance / (10.0 + self.aiLevel * 2.0) in
+        let aiBonus = self.aiLevel * 0.1 in {
+            "Path Analysis: dist=" @ str(directDistance) @ "m, angle=" @ str(optimalAngle * 180.0 / PI) @ 
+            "°, energy=" @ str(energyEstimate * (1.0 - aiBonus)) @ "%, time=" @ str(timeEstimate * (1.0 - aiBonus)) @ "h"
+        }
+    };
+}
+
+// ======================= SISTEMA DE CONTROL Y MONITOREO =======================
+
+type ControlCenter {
+    systemId = 0;
+    connectedDevices = 0;
+    totalEnergyConsumed = 0.0;
+    systemUptime = 0.0;
+    alertLevel = 0;
+    
+    init(id) {
+        self.systemId := id;
+        self.connectedDevices := 0;
+        self.totalEnergyConsumed := 0.0;
+        self.systemUptime := 0.0;
+        self.alertLevel := 0;
+    }
+    
+    registerDevice() => {
+        self.connectedDevices := self.connectedDevices + 1;
+        "Device registered. Total devices: " @ str(self.connectedDevices)
+    };
+    
+    calculateSystemEfficiency() => {
+        let baseEfficiency = 0.95 in
+        let devicePenalty = self.connectedDevices * 0.02 in  // Más dispositivos = menos eficiencia
+        let uptimeFactor = if (self.systemUptime > 1000.0) 0.9 else 1.0 in  // Degradación por tiempo
+        let efficiency = baseEfficiency - devicePenalty * uptimeFactor in
+        if (efficiency < 0.5) 0.5 else efficiency  // Mínimo 50%
+    };
+    
+    monitorSystem(deltaTime) => {
+        self.systemUptime := self.systemUptime + deltaTime;
+        let efficiency = self.calculateSystemEfficiency() in
+        let powerConsumption = self.connectedDevices * 50.0 * deltaTime / 3600.0 in {  // kWh
+            self.totalEnergyConsumed := self.totalEnergyConsumed + powerConsumption;
+            
+            // Sistema de alertas inteligente
+            if (efficiency < 0.7) {
+                self.alertLevel := 2;
+                "⚠️ ALERT: System efficiency low (" @ str(efficiency * 100.0) @ "%)"
+            } else if (self.totalEnergyConsumed > 1000.0) {
+                self.alertLevel := 1;
+                "🔶 WARNING: High energy consumption (" @ str(self.totalEnergyConsumed) @ " kWh)"
+            } else {
+                self.alertLevel := 0;
+                "✅ System nominal: η=" @ str(efficiency * 100.0) @ "%, E=" @ str(self.totalEnergyConsumed) @ "kWh"
+            }
+        }
+    };
+    
+    generateReport() => {
+        let avgEnergyPerDevice = if (self.connectedDevices > 0) 
+                                self.totalEnergyConsumed / self.connectedDevices else 0.0 in
+        let efficiency = self.calculateSystemEfficiency() in
+        let uptime_days = self.systemUptime / 24.0 in {
+            "📊 SYSTEM REPORT 📊" @ "\n" @
+            "Devices: " @ str(self.connectedDevices) @ " | " @
+            "Uptime: " @ str(uptime_days) @ " days | " @
+            "Total Energy: " @ str(self.totalEnergyConsumed) @ " kWh | " @
+            "Avg/Device: " @ str(avgEnergyPerDevice) @ " kWh | " @
+            "Efficiency: " @ str(efficiency * 100.0) @ "% | " @
+            "Alert Level: " @ str(self.alertLevel)
+        }
+    };
+}
+
+// ======================= ALGORITMOS COMPLEJOS DE SIMULACIÓN =======================
+
+type MathEngine {
+    precision = 8;
+    calculationCount = 0;
+    
+    init(precision) {
+        self.precision := precision;
+        self.calculationCount := 0;
+    }
+    
+    // Simulación de ecuaciones diferenciales (método de Euler)
+    simulatePopulationGrowth(initialPop, growthRate, carryingCapacity, timeSteps) => {
+        let population = initialPop in
+        let dt = 0.1 in
+        let i = 0 in {
+            while (i < timeSteps) {
+                let dPdt = growthRate * population * (1.0 - population / carryingCapacity) in
+                population := population + dPdt * dt;
+                i := i + 1;
+                self.calculationCount := self.calculationCount + 1;
+            };
+            population
+        }
+    };
+    
+    // Análisis de Fourier simplificado
+    fourierApproximation(x, terms) => {
+        let result = 0.0 in
+        let n = 1 in {
+            while (n <= terms) {
+                let coefficient = 4.0 / (PI * (2.0 * n - 1.0)) in
+                let term = coefficient * sin((2.0 * n - 1.0) * x) in
+                result := result + term;
+                n := n + 1;
+                self.calculationCount := self.calculationCount + 1;
+            };
+            result
+        }
+    };
+    
+    // Método de Monte Carlo para π
+    monteCarloPi(samples) => {
+        let inside = 0 in
+        let total = 0 in {
+            while (total < samples) {
+                // Simulación de puntos aleatorios usando funciones trigonométricas como "random"
+                let x = sin(total * 1.618) in  // Golden ratio como semilla
+                let y = cos(total * 2.718) in  // e como semilla
+                let distance = sqrt(x * x + y * y) in
+                if (distance <= 1.0) {
+                    inside := inside + 1;
+                };
+                total := total + 1;
+                self.calculationCount := self.calculationCount + 1;
+            };
+            4.0 * inside / total
+        }
+    };
+    
+    getStats() => "MathEngine: " @ str(self.calculationCount) @ " calculations, precision=" @ str(self.precision);
+}
+
+// ======================= PROGRAMA PRINCIPAL ULTRA-COMPLEJO =======================
+
+print("🚀 INICIANDO SIMULACIÓN DE FÁBRICA ROBÓTICA INTELIGENTE 🚀");
+print("");
+
+// Crear centro de control
+let controlCenter = new ControlCenter(1) in {
+    print("🏭 " @ controlCenter.registerDevice());
+    
+    // Crear robots con diferentes especificaciones
+    let robot1 = new Robot(101, "ARES-Alpha", 120.0, 0.8, 500.0, 3) in
+    let robot2 = new Robot(102, "ARES-Beta", 95.0, 0.6, 350.0, 2) in
+    let robot3 = new Robot(103, "ARES-Gamma", 150.0, 1.0, 750.0, 4) in {
+        
+        print("🤖 " @ controlCenter.registerDevice());
+        print("🤖 " @ controlCenter.registerDevice());
+        print("🤖 " @ controlCenter.registerDevice());
+        print("");
+        
+        print("📋 ROBOTS INICIALIZADOS:");
+        print("  " @ robot1.describe());
+        print("  " @ robot2.describe());
+        print("  " @ robot3.describe());
+        print("");
+        
+        // Simulación de operaciones complejas
+        print("⚙️ INICIANDO OPERACIONES DE MANUFACTURA:");
+        
+        // Robot 1: Tarea de precisión
+        print("🎯 Robot 1 - Tarea de Precisión:");
+        print("  " @ robot1.calculatePathOptimization(15.0, 20.0));
+        print("  " @ robot1.move(5.0, 8.0));
+        print("  " @ robot1.operate(2.5));
+        print("  " @ robot1.move(10.0, 12.0));
+        
+        // Robot 2: Tarea de velocidad
+        print("🏃 Robot 2 - Tarea de Velocidad:");
+        print("  " @ robot2.move(-8.0, 15.0));
+        print("  " @ robot2.operate(1.8));
+        print("  " @ robot2.move(12.0, -5.0));
+        
+        // Robot 3: Tarea pesada
+        print("💪 Robot 3 - Tarea Pesada:");
+        print("  " @ robot3.applyForce(2000.0, 5.0));
+        print("  " @ robot3.operate(4.2));
+        print("  " @ robot3.move(3.0, 7.0));
+        print("");
+        
+        // Análisis matemático avanzado
+        let mathEngine = new MathEngine(6) in {
+            print("🧮 ANÁLISIS MATEMÁTICO DEL SISTEMA:");
+            
+            // Simulación de población de productos
+            let finalProduction = mathEngine.simulatePopulationGrowth(10.0, 0.5, 1000.0, 50) in
+            print("  📈 Proyección de producción (50 ciclos): " @ str(finalProduction) @ " unidades");
+            
+            // Aproximación de ondas de eficiencia
+            let efficiencyWave = mathEngine.fourierApproximation(PI/4, 10) in
+            print("  🌊 Patrón de eficiencia (Fourier): " @ str(efficiencyWave));
+            
+            // Estimación de π por Monte Carlo
+            let piEstimate = mathEngine.monteCarloPi(1000) in
+            print("  🎯 Estimación π (Monte Carlo): " @ str(piEstimate) @ " (real: " @ str(PI) @ ")");
+            print("  " @ mathEngine.getStats());
+            print("");
+            
+            // Monitoreo del sistema
+            print("📊 MONITOREO CONTINUO DEL SISTEMA:");
+            print("  " @ controlCenter.monitorSystem(8.5));
+            print("  " @ controlCenter.monitorSystem(12.3));
+            print("  " @ controlCenter.monitorSystem(6.7));
+            print("");
+            
+            // Cálculos finales ultra-complejos
+            print("🎯 ANÁLISIS FINAL INTEGRADO:");
+            
+            let systemComplexity = 
+                // Factor de robots
+                let robotFactor = (robot1.batteryLevel + robot2.batteryLevel + robot3.batteryLevel) / 3.0 in
+                // Factor matemático
+                let mathFactor = finalProduction * efficiencyWave * (piEstimate / PI) in
+                // Factor de eficiencia del sistema
+                let systemEfficiency = controlCenter.calculateSystemEfficiency() * 100.0 in
+                // Factor de temperatura promedio
+                let avgTemp = (robot1.temperature + robot2.temperature + robot3.temperature) / 3.0 in
+                // Factor de distancia total recorrida
+                let totalDistance = sqrt(pow(robot1.posX, 2) + pow(robot1.posY, 2)) +
+                                  sqrt(pow(robot2.posX, 2) + pow(robot2.posY, 2)) +
+                                  sqrt(pow(robot3.posX, 2) + pow(robot3.posY, 2)) in
+                
+                // FÓRMULA FINAL MEGA-COMPLEJA
+                (robotFactor * mathFactor * systemEfficiency) / (avgTemp + 273.15) *
+                sin(totalDistance * PI / 180.0) * cos(controlCenter.systemUptime * PI / 24.0) *
+                pow(E, controlCenter.connectedDevices / 10.0) * sqrt(mathEngine.calculationCount) *
+                (1.0 + robot1.aiLevel + robot2.aiLevel + robot3.aiLevel) / 4.0
+            in {
+                
+                print("  🔢 Complejidad del Sistema: " @ str(systemComplexity));
+                print("  📊 " @ controlCenter.generateReport());
+                print("");
+                
+                // Estados finales de todos los robots
+                print("🤖 ESTADOS FINALES DE ROBOTS:");
+                print("  Alpha: " @ robot1.describe());
+                print("  Beta:  " @ robot2.describe());
+                print("  Gamma: " @ robot3.describe());
+                print("  Lifetime Alpha: " @ str(robot1.calculateLifetime()) @ " horas");
+                print("  Lifetime Beta:  " @ str(robot2.calculateLifetime()) @ " horas");
+                print("  Lifetime Gamma: " @ str(robot3.calculateLifetime()) @ " horas");
+                print("");
+                
+                systemComplexity
+            }
+        }
+    }
+}
+
+print("╔═══════════════════════════════════════════════════════════════════════════════╗");
+print("║                        🏆 SIMULACIÓN COMPLETADA 🏆                          ║");
+print("║                                                                               ║");
+print("║  ✅ HERENCIA MÚLTIPLE de 4 niveles (Entity→Physical→Machine→Robot)          ║");
+print("║  ✅ POLIMORFISMO con override de métodos en cada nivel                       ║");
+print("║  ✅ MATEMÁTICAS AVANZADAS (sin, cos, sqrt, pow, PI, E)                      ║");
+print("║  ✅ ALGORITMOS COMPLEJOS (Euler, Fourier, Monte Carlo)                      ║");
+print("║  ✅ GESTIÓN DE OBJETOS con estados complejos                                 ║");
+print("║  ✅ EXPRESIONES LET profundamente anidadas                                   ║");
+print("║  ✅ OPERACIONES DE STRINGS avanzadas                                         ║");
+print("║  ✅ SISTEMA DE TIPOS dinámico robusto                                        ║");
+print("║  ✅ RECURSIÓN Y BUCLES complejos                                             ║");
+print("║  ✅ SIMULACIÓN DE FÍSICA Y MATEMÁTICA APLICADA                              ║");
+print("║                                                                               ║");
+print("║              🚀 HULK COMPILER - COMPLETAMENTE FUNCIONAL 🚀                  ║");
+print("║                                                                               ║");
+print("║               Desarrollado por Mauro Campver & Rodrigo Mederos               ║");
+print("║                        Universidad de La Habana - 2025                       ║");
+print("╚═══════════════════════════════════════════════════════════════════════════════╝");

@@ -34,7 +34,14 @@
         "cmath": "cpp",
         "random": "cpp",
         "ranges": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "any": "cpp",
+        "array": "cpp",
+        "charconv": "cpp",
+        "complex": "cpp",
+        "functional": "cpp",
+        "ratio": "cpp",
+        "scoped_allocator": "cpp"
     },
     "editor.rulers": [80, 120],
     "files.exclude": {

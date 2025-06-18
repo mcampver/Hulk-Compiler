@@ -15,6 +15,10 @@ void SemanticAnalyzer::registerBuiltinFunctions() {
     symbol_table_.declareFunction("floor", {"x"});
     symbol_table_.declareFunction("ceil", {"x"});
     
+    // Math constants (as functions)
+    symbol_table_.declareFunction("PI", {});
+    symbol_table_.declareFunction("E", {});
+    
     // I/O functions
     symbol_table_.declareFunction("print", {"x"});
     symbol_table_.declareFunction("println", {"x"});

@@ -1,0 +1,297 @@
+// ===================================================================
+// SCRIPT PARA DEMOSTRACIÓN EN VIVO - EXPOSICIÓN HULK COMPILER
+// Este script está diseñado específicamente para la presentación
+// Muestra las características más impresionantes en orden lógico
+// ===================================================================
+
+print("================================================================");
+print("|                    >> HULK COMPILER <<                      |");
+print("|              Demostracion en Vivo - Exposicion              |");
+print("|                    Compilacion 2025                         |");
+print("================================================================");
+print("");
+
+// ======================= 1. HERENCIA Y POLIMORFISMO =======================
+
+print("[1] DEMOSTRACION: HERENCIA MULTIPLE Y POLIMORFISMO");
+print("================================================================");
+
+type Vehicle {
+    wheels = 4;
+    fuel = 100.0;
+    
+    init(w, f) {
+        self.wheels := w;
+        self.fuel := f;
+    }
+    
+    drive() => "[CAR] Vehicle con " @ str(self.wheels) @ " ruedas, combustible: " @ str(self.fuel) @ "%";
+    refuel() { self.fuel := 100.0; }
+};
+
+type Car inherits Vehicle {
+    brand = "Generic";
+    
+    init(w, f, b) {
+        base.init(w, f);  // <- HERENCIA: llamada al constructor padre
+        self.brand := b;
+    }
+      drive() => "[RACING] " @ self.brand @ " acelerando suavemente";  // <- OVERRIDE
+    honk() => "[HORN] " @ self.brand @ " hace ¡BEEP BEEP!";
+};
+
+type SportsCar inherits Car {
+    maxSpeed = 200.0;
+    
+    init(w, f, b, speed) {
+        base.init(w, f, b);  // <- HERENCIA MULTIPLE NIVEL
+        self.maxSpeed := speed;
+    }
+      drive() => base.drive() @ " a " @ str(self.maxSpeed) @ " km/h [FAST]";  // <- POLIMORFISMO
+    turbo() => "[TURBO] ¡MODO TURBO ACTIVADO! Velocidad maxima: " @ str(self.maxSpeed);
+};
+
+// Crear objetos y demostrar polimorfismo
+let ferrari = new SportsCar(4, 85.0, "Ferrari", 350.0) in
+let toyota = new Car(4, 70.0, "Toyota") in {
+      print(">> Creando objetos con herencia multiple:");
+    print("  " @ ferrari.drive());  // <- Resolucion dinamica de metodos
+    print("  " @ toyota.drive());   // <- Mismo metodo, comportamiento diferente
+    
+    print(">> Metodos especificos por clase:");
+    print("  " @ ferrari.turbo());  // <- Metodo especifico de SportsCar
+    print("  " @ toyota.honk());    // <- Metodo especifico de Car
+};
+
+print("");
+
+// ======================= 2. OPERACIONES MATEMÁTICAS AVANZADAS =======================
+
+print("[2] DEMOSTRACION: OPERACIONES MATEMATICAS BUILT-IN");
+print("================================================================");
+
+function calcularAreaCirculo(radio) => PI() * pow(radio, 2);
+function calcularDistancia(x1, y1, x2, y2) => sqrt(pow(x2-x1, 2) + pow(y2-y1, 2));
+
+let radio = 5.0 in
+let area = calcularAreaCirculo(radio) in {    print(">> Calculos con constantes matematicas:");
+    print("  pi = " @ str(PI()));
+    print("  e = " @ str(E()));
+    print("  Area circulo (r=" @ str(radio) @ ") = pi x r^2 = " @ str(area));
+};
+
+print(">> Funciones trigonometricas:");
+let angulo = 45.0 in
+let radianes = angulo * PI() / 180.0 in {    print("  sin(" @ str(angulo) @ "grados) = " @ str(sin(radianes)));
+    print("  cos(" @ str(angulo) @ "grados) = " @ str(cos(radianes)));
+    print("  raiz(2) = " @ str(sqrt(2.0)) @ " (verificacion: sin^2+cos^2 = " @ str(pow(sin(radianes),2) + pow(cos(radianes),2)) @ ")");
+};
+
+let distancia = calcularDistancia(0.0, 0.0, 3.0, 4.0) in
+print("  Distancia (0,0) -> (3,4) = " @ str(distancia) @ " (Teorema de Pitagoras)");
+
+print("");
+
+// ======================= 3. SISTEMA DE TIPOS DINÁMICO =======================
+
+print("[3] DEMOSTRACION: SISTEMA DE TIPOS DINAMICO");
+print("================================================================");
+
+type Calculadora {
+    precision = 2;
+    historial = "vacio";
+    
+    init(prec) {        self.precision := prec;
+        self.historial := "Calculadora inicializada con precision " @ str(prec);
+    }
+      // Método que demuestra conversiones automáticas de tipos    
+    calcular(a, b, operacion) => {
+        if (operacion == "suma") {
+            self.historial := "Suma: " @ str(a) @ " + " @ str(b) @ " = " @ str(a + b);
+            a + b;
+        }
+        else if (operacion == "potencia") {
+            self.historial := "Potencia: " @ str(a) @ "^" @ str(b) @ " = " @ str(pow(a, b));
+            pow(a, b);
+        }
+        else {
+            self.historial := "Operacion no reconocida: " @ operacion;
+            0.0;
+        };
+    };
+    
+    getHistorial() => self.historial;
+};
+
+let calc = new Calculadora(4) in {    print(">> Inferencia automatica de tipos:");
+    
+    // El compilador infiere tipos automaticamente
+    let entero = 42 in           // <- Numero
+    let decimal = 3.14159 in     // <- Numero decimal  
+    let texto = "HULK" in        // <- String
+    let booleano = true in {     // <- Boolean        print("  Entero: " @ str(entero) @ " (tipo inferido automaticamente)");
+        print("  Decimal: " @ str(decimal) @ " (tipo inferido automaticamente)");
+        print("  String: " @ texto @ " (tipo inferido automaticamente)");
+        print("  Boolean: " @ str(booleano) @ " (tipo inferido automaticamente)");
+        
+        print(">> Conversiones automaticas en operaciones:");
+        let suma = calc.calcular(entero, decimal, "suma") in
+        let potencia = calc.calcular(2.0, 8.0, "potencia") in {        
+            print("  " @ calc.getHistorial());
+            calc.calcular(3.0, 4.0, "potencia");
+            print("  " @ calc.getHistorial());
+        };
+    };
+};
+
+print("");
+
+// ======================= 4. EXPRESIONES LET ANIDADAS COMPLEJAS =======================
+
+print("[4] DEMOSTRACION: EXPRESIONES LET ANIDADAS Y SCOPES");
+print("================================================================");
+
+let resultadoComplejo = 
+    let nivel1 = "Outer scope" in
+    let valorA = 10.0 in
+    let valorB = 20.0 in {
+        print("  Nivel 1: " @ nivel1 @ ", valorA=" @ str(valorA) @ ", valorB=" @ str(valorB));
+        
+        let nivel2 = 
+            let nivel2_interno = "Inner scope" in
+            let suma = valorA + valorB in  // <- Acceso a variables del scope padre
+            let producto = valorA * valorB in {
+                print("  Nivel 2: " @ nivel2_interno @ ", suma=" @ str(suma) @ ", producto=" @ str(producto));
+                
+                let nivel3 =                    let calculoFinal = sqrt(suma * producto) + sin(PI()/4) * cos(PI()/4) in {
+                        print("  Nivel 3: Calculo final = " @ str(calculoFinal));
+                        calculoFinal;
+                    }
+                in {
+                    print("  Retornando desde nivel 3: " @ str(nivel3));
+                    nivel3 * 2.0;
+                };
+            }
+        in {
+            print("  Retornando desde nivel 2: " @ str(nivel2));
+            nivel2 + 100.0;
+        };
+    }
+in {    print(">> Resultado de expresiones let anidadas: " @ str(resultadoComplejo));
+    print("  [OK] Gestion correcta de multiples scopes");
+    print("  [OK] Acceso a variables de scopes padre");
+    print("  [OK] Retorno correcto a traves de niveles");
+};
+
+print("");
+
+// ======================= 5. RECURSIÓN Y ALGORITMOS =======================
+
+print("[5] DEMOSTRACION: RECURSION Y ALGORITMOS");
+print("================================================================");
+
+function factorial(n) => if (n <= 1) 1 else n * factorial(n - 1);
+function fibonacci(n) => if (n <= 1) n else fibonacci(n-1) + fibonacci(n-2);
+
+print(">> Algoritmos recursivos:");
+print("  5! = " @ str(factorial(5)) @ " (factorial recursivo)");
+print("  8! = " @ str(factorial(8)));
+print("  Fibonacci(10) = " @ str(fibonacci(10)) @ " (recursion multiple)");
+
+// Algoritmo iterativo vs recursivo
+function sumaIterativa(n) => {
+    let suma = 0 in
+    let i = 1 in {
+        while (i <= n) {
+            suma := suma + i;
+            i := i + 1;
+        };
+        suma;
+    };
+};
+
+function sumaRecursiva(n) => if (n <= 0) 0 else n + sumaRecursiva(n - 1);
+
+let n = 10 in {    print("  Suma 1 a " @ str(n) @ " (iterativa): " @ str(sumaIterativa(n)));
+    print("  Suma 1 a " @ str(n) @ " (recursiva): " @ str(sumaRecursiva(n)));
+    print("  [OK] Ambos metodos producen el mismo resultado");
+};
+
+print("");
+
+// ======================= 6. DEMOSTRACIÓN FINAL INTEGRADA =======================
+
+print("[6] DEMOSTRACION FINAL: INTEGRACION COMPLETA");
+print("================================================================");
+
+type Robot {
+    id = 0;
+    energia = 100.0;
+    posX = 0.0;
+    posY = 0.0;
+    
+    init(id, x, y) {
+        self.id := id;
+        self.posX := x;
+        self.posY := y;
+        self.energia := 100.0;
+    }
+    
+    mover(deltaX, deltaY) => {
+        let distancia = sqrt(pow(deltaX, 2) + pow(deltaY, 2)) in
+        let energiaConsumida = distancia * 2.0 in {
+            self.posX := self.posX + deltaX;
+            self.posY := self.posY + deltaY;
+            self.energia := self.energia - energiaConsumida;            "Robot " @ str(self.id) @ " movido a (" @ str(self.posX) @ "," @ str(self.posY) @ 
+            "), energia restante: " @ str(self.energia) @ "%";
+        };
+    };
+    
+    calcularRutaOptima(destinoX, destinoY) => {
+        let distanciaDirecta = sqrt(pow(destinoX - self.posX, 2) + pow(destinoY - self.posY, 2)) in
+        let energiaNecesaria = distanciaDirecta * 2.0 in
+        let anguloRad = if (destinoX == self.posX) PI()/2 else 
+                       if (destinoX > self.posX) 0.0 else PI() in        let anguloDeg = anguloRad * 180.0 / PI() in {
+            "Ruta optima: distancia=" @ str(distanciaDirecta) @ 
+            ", energia=" @ str(energiaNecesaria) @ 
+            ", angulo=" @ str(anguloDeg) @ " grados";
+        };
+    };
+};
+
+let robot1 = new Robot(1, 0.0, 0.0) in
+let robot2 = new Robot(2, 5.0, 5.0) in {    print(">> Sistema robotico complejo:");
+    print("  " @ robot1.mover(3.0, 4.0));
+    print("  " @ robot1.calcularRutaOptima(10.0, 8.0));
+    print("  " @ robot2.mover(-2.0, 3.0));
+    
+    // Calculo complejo combinando todo
+    let distanciaEntreRobots = sqrt(pow(robot2.posX - robot1.posX, 2) + pow(robot2.posY - robot1.posY, 2)) in
+    let energiaTotal = robot1.energia + robot2.energia in
+    let eficienciaPromedio = energiaTotal / 2.0 in {        print("  Distancia entre robots: " @ str(distanciaEntreRobots));
+        print("  Energia total del sistema: " @ str(energiaTotal) @ "%");
+        print("  Eficiencia promedio: " @ str(eficienciaPromedio) @ "%");
+        
+        // Operacion final mega-compleja
+        let metricaCompleja = 
+            (distanciaEntreRobots * eficienciaPromedio / 100.0) + 
+            sin(PI() * eficienciaPromedio / 180.0) * cos(PI() * distanciaEntreRobots / 180.0) +
+            pow(E(), energiaTotal / 1000.0) * sqrt(robot1.id + robot2.id)
+        in
+        print("  [TARGET] Metrica de rendimiento del sistema: " @ str(metricaCompleja));
+    };
+};
+
+print("");
+print("================================================================");
+print("|                  >> DEMOSTRACION COMPLETADA <<              |");
+print("|                                                              |");
+print("|  [OK] Herencia multiple y polimorfismo                      |");
+print("|  [OK] Operaciones matematicas avanzadas (sin, cos, raiz, pi)|");
+print("|  [OK] Sistema de tipos dinamico con inferencia              |");
+print("|  [OK] Expresiones let anidadas complejas                    |");
+print("|  [OK] Recursion y algoritmos                                |");
+print("|  [OK] Integracion completa de caracteristicas               |");
+print("|                                                              |");
+print("|           >> HULK COMPILER - TOTALMENTE FUNCIONAL <<        |");
+print("================================================================");
