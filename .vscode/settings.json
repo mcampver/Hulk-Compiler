@@ -41,7 +41,8 @@
         "complex": "cpp",
         "functional": "cpp",
         "ratio": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "numbers": "cpp"
     },
     "editor.rulers": [80, 120],
     "files.exclude": {

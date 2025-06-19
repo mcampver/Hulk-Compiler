@@ -91,7 +91,13 @@ program:
       $1->stmts.emplace_back( StmtPtr($2) );
       $$ = $1;
     }
-;    
+  | program expr
+    {
+      // Permitir una expresión final sin punto y coma
+      $1->stmts.emplace_back( StmtPtr(new ExprStmt(ExprPtr($2))) );
+      $$ = $1;
+    }
+;
 
 binding_list:
     binding {

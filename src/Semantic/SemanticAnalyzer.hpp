@@ -5,6 +5,7 @@
 #include "TypeInfo.hpp"
 #include <vector>
 #include <iostream>
+#include <unordered_set>
 
 /**
  * @brief Semantic analyzer for HULK language
@@ -127,15 +128,34 @@ private:
     /**
      * @brief Convert binary operator enum to string
      */
-    std::string getBinaryOpString(BinaryExpr::Op op);
-    
-    /**
+    std::string getBinaryOpString(BinaryExpr::Op op);    /**
      * @brief Check if two types are compatible
      */
     bool areTypesCompatible(const TypeInfo& type1, const TypeInfo& type2);
     
     /**
+     * @brief Check if childType is a subtype of parentType (inheritance)
+     */
+    bool isSubtype(const std::string& childType, const std::string& parentType);
+    
+    /**
+     * @brief Find a common ancestor between two types (for determining compatibility)
+     */
+    std::string findCommonAncestor(const std::string& type1, const std::string& type2);
+    
+    /**
+     * @brief Get all ancestors of a type
+     */
+    std::unordered_set<std::string> getAllAncestors(const std::string& type);
+    
+    /**
      * @brief Check if a word is reserved in HULK language
      */
     bool isReservedWord(const std::string& word);
+    
+private:
+    /**
+     * @brief Store inheritance relationships (child -> parent)
+     */
+    std::map<std::string, std::string> inheritance_map_;
 };

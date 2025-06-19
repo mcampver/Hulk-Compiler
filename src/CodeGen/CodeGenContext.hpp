@@ -138,4 +138,13 @@ public:
     // Type management helpers
     llvm::Type* getFieldType(const std::string& type_name, const std::string& field_name);
     llvm::Type* getFieldType(const std::string& type_name, int field_index);
+    
+    // Get all type names defined in the program
+    std::vector<std::string> getAllTypeNames() const {
+        std::vector<std::string> types;
+        for (const auto& pair : custom_types_) {
+            types.push_back(pair.first);
+        }
+        return types;
+    }
 };

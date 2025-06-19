@@ -1,0 +1,16 @@
+type A {
+    f() => "A";
+};
+
+type B inherits A {
+    f() => "B";
+    g() => "A";
+};
+
+
+let x = 5 in 
+let y = (if (x>0) new A() else new B()) in print(y.g()); 
+//ToDO
+// ; al finla de funtion y type
+// parte semantica y generacion de codigo polimorfismo 
+
